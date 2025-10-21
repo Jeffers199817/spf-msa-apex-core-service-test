@@ -16,7 +16,7 @@ services:
         condition: service_healthy
 
   db_apex_core:
-    image: postgres:15-alpine
+    image: postgres:13
     ports:
       - "5433:5432"
     environment:
