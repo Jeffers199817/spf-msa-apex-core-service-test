@@ -16,11 +16,10 @@ services:
         condition: service_healthy
 
   db_apex_core:
-    image: postgres:15-alpine
+    image: postgres:13
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_ROOT_PASSWORD: admin123
       POSTGRES_PASSWORD: admin123
       POSTGRES_USER: postgres
       POSTGRES_DB: bdd_apex_core_banco

@@ -12,4 +12,4 @@ VOLUME /tmp
 ADD build/libs/*.jar apex-core-service.jar
 EXPOSE 9090
 RUN bash -c 'touch /apex-core-service.jar'
-ENTRYPOINT ["java","-Djava.awt.headless=true","-Dspring.profiles.active=docker","-jar","apex-core-service.jar"]
+ENTRYPOINT ["java","-Djava.awt.headless=true","-jar","apex-core-service.jar"]
