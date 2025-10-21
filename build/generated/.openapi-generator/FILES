@@ -1,0 +1,14 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/com/pichincha/spfmsaapexcoreservice/api/AccountsApi.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/api/ApiUtil.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/api/ClientsApi.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/api/ReportsApi.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/api/TransactionsApi.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/AccountDTO.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/ClientDTO.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/CreateTransaction400Response.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/ReportDTO.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/ReportResponseDTO.java
+src/main/java/com/pichincha/spfmsaapexcoreservice/model/TransactionDTO.java
