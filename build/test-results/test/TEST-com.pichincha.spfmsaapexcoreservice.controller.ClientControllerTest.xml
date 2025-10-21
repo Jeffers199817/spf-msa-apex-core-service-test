@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.pichincha.spfmsaapexcoreservice.controller.ClientControllerTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-10-20T08:30:11.156Z" hostname="DESKTOP-58RNR6C" time="0.411">
+  <properties/>
+  <testcase name="createClient_ValidData_ShouldReturnCreatedClient()" classname="com.pichincha.spfmsaapexcoreservice.controller.ClientControllerTest" time="0.411"/>
+  <system-out><![CDATA[Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+03:29:53.736 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.pichincha.spfmsaapexcoreservice.controller.ClientControllerTest]: ClientControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+03:29:54.167 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.pichincha.spfmsaapexcoreservice.OptimusApplication for test class com.pichincha.spfmsaapexcoreservice.controller.ClientControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.6)
+
+2025-10-20 03:29:55 - Starting ClientControllerTest using Java 21.0.7 with PID 27676 (started by jefferson in C:\Users\jefferson\Documents\workspace-banco\prueba-tecnica\spf-msa-apex-core-service)
+2025-10-20 03:29:55 - No active profile set, falling back to 1 default profile: "default"
+2025-10-20 03:30:03 - HikariPool-1 - Starting...
+2025-10-20 03:30:03 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@56062720
+2025-10-20 03:30:03 - HikariPool-1 - Start completed.
+2025-10-20 03:30:04 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-10-20 03:30:09 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-10-20 03:30:11 - Started ClientControllerTest in 16.299 seconds (process running for 19.551)
+2025-10-20 03:30:11 - Creating client with identification: 1234567890
+2025-10-20 03:30:11 - Client created successfully with ID: 1
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\jefferson\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.7\fbf3d6d649ed37fc9e9c59480a05be0a26e3c2da\byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

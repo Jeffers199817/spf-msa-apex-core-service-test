@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClientDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.model</a> &gt; <span class="el_source">ClientDTO.java</span></div><h1>ClientDTO.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.model;
+
+import java.net.URI;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import org.springframework.lang.Nullable;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import jakarta.annotation.Generated;
+
+/**
+ * ClientDTO
+ */
+
+@Generated(value = &quot;org.openapitools.codegen.languages.SpringCodegen&quot;, date = &quot;2025-10-20T02:43:05.386267500-05:00[America/Bogota]&quot;, comments = &quot;Generator version: 7.15.0&quot;)
+<span class="fc" id="L23">public class ClientDTO {</span>
+
+  private @Nullable Long clientId;
+
+  private @Nullable String name;
+
+  private @Nullable String gender;
+
+  private @Nullable Integer age;
+
+  private @Nullable String identification;
+
+  private @Nullable String address;
+
+  private @Nullable String phone;
+
+  private @Nullable String password;
+
+  private @Nullable Boolean status;
+
+  public ClientDTO clientId(@Nullable Long clientId) {
+<span class="nc" id="L44">    this.clientId = clientId;</span>
+<span class="nc" id="L45">    return this;</span>
+  }
+
+  /**
+   * Get clientId
+   * @return clientId
+   */
+  
+  @Schema(name = &quot;clientId&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;clientId&quot;)
+  public @Nullable Long getClientId() {
+<span class="fc" id="L56">    return clientId;</span>
+  }
+
+  public void setClientId(@Nullable Long clientId) {
+<span class="fc" id="L60">    this.clientId = clientId;</span>
+<span class="fc" id="L61">  }</span>
+
+  public ClientDTO name(@Nullable String name) {
+<span class="nc" id="L64">    this.name = name;</span>
+<span class="nc" id="L65">    return this;</span>
+  }
+
+  /**
+   * Get name
+   * @return name
+   */
+  
+  @Schema(name = &quot;name&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;name&quot;)
+  public @Nullable String getName() {
+<span class="fc" id="L76">    return name;</span>
+  }
+
+  public void setName(@Nullable String name) {
+<span class="fc" id="L80">    this.name = name;</span>
+<span class="fc" id="L81">  }</span>
+
+  public ClientDTO gender(@Nullable String gender) {
+<span class="nc" id="L84">    this.gender = gender;</span>
+<span class="nc" id="L85">    return this;</span>
+  }
+
+  /**
+   * Get gender
+   * @return gender
+   */
+  
+  @Schema(name = &quot;gender&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;gender&quot;)
+  public @Nullable String getGender() {
+<span class="fc" id="L96">    return gender;</span>
+  }
+
+  public void setGender(@Nullable String gender) {
+<span class="fc" id="L100">    this.gender = gender;</span>
+<span class="fc" id="L101">  }</span>
+
+  public ClientDTO age(@Nullable Integer age) {
+<span class="nc" id="L104">    this.age = age;</span>
+<span class="nc" id="L105">    return this;</span>
+  }
+
+  /**
+   * Get age
+   * @return age
+   */
+  
+  @Schema(name = &quot;age&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;age&quot;)
+  public @Nullable Integer getAge() {
+<span class="fc" id="L116">    return age;</span>
+  }
+
+  public void setAge(@Nullable Integer age) {
+<span class="fc" id="L120">    this.age = age;</span>
+<span class="fc" id="L121">  }</span>
+
+  public ClientDTO identification(@Nullable String identification) {
+<span class="nc" id="L124">    this.identification = identification;</span>
+<span class="nc" id="L125">    return this;</span>
+  }
+
+  /**
+   * Get identification
+   * @return identification
+   */
+  
+  @Schema(name = &quot;identification&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;identification&quot;)
+  public @Nullable String getIdentification() {
+<span class="fc" id="L136">    return identification;</span>
+  }
+
+  public void setIdentification(@Nullable String identification) {
+<span class="fc" id="L140">    this.identification = identification;</span>
+<span class="fc" id="L141">  }</span>
+
+  public ClientDTO address(@Nullable String address) {
+<span class="nc" id="L144">    this.address = address;</span>
+<span class="nc" id="L145">    return this;</span>
+  }
+
+  /**
+   * Get address
+   * @return address
+   */
+  
+  @Schema(name = &quot;address&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;address&quot;)
+  public @Nullable String getAddress() {
+<span class="fc" id="L156">    return address;</span>
+  }
+
+  public void setAddress(@Nullable String address) {
+<span class="fc" id="L160">    this.address = address;</span>
+<span class="fc" id="L161">  }</span>
+
+  public ClientDTO phone(@Nullable String phone) {
+<span class="nc" id="L164">    this.phone = phone;</span>
+<span class="nc" id="L165">    return this;</span>
+  }
+
+  /**
+   * Get phone
+   * @return phone
+   */
+  
+  @Schema(name = &quot;phone&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;phone&quot;)
+  public @Nullable String getPhone() {
+<span class="fc" id="L176">    return phone;</span>
+  }
+
+  public void setPhone(@Nullable String phone) {
+<span class="fc" id="L180">    this.phone = phone;</span>
+<span class="fc" id="L181">  }</span>
+
+  public ClientDTO password(@Nullable String password) {
+<span class="nc" id="L184">    this.password = password;</span>
+<span class="nc" id="L185">    return this;</span>
+  }
+
+  /**
+   * Get password
+   * @return password
+   */
+  
+  @Schema(name = &quot;password&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;password&quot;)
+  public @Nullable String getPassword() {
+<span class="fc" id="L196">    return password;</span>
+  }
+
+  public void setPassword(@Nullable String password) {
+<span class="fc" id="L200">    this.password = password;</span>
+<span class="fc" id="L201">  }</span>
+
+  public ClientDTO status(@Nullable Boolean status) {
+<span class="nc" id="L204">    this.status = status;</span>
+<span class="nc" id="L205">    return this;</span>
+  }
+
+  /**
+   * Get status
+   * @return status
+   */
+  
+  @Schema(name = &quot;status&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;status&quot;)
+  public @Nullable Boolean getStatus() {
+<span class="fc" id="L216">    return status;</span>
+  }
+
+  public void setStatus(@Nullable Boolean status) {
+<span class="fc" id="L220">    this.status = status;</span>
+<span class="fc" id="L221">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L226">      return true;</span>
+    }
+<span class="nc bnc" id="L228" title="All 4 branches missed.">    if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L229">      return false;</span>
+    }
+<span class="nc" id="L231">    ClientDTO clientDTO = (ClientDTO) o;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    return Objects.equals(this.clientId, clientDTO.clientId) &amp;&amp;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        Objects.equals(this.name, clientDTO.name) &amp;&amp;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        Objects.equals(this.gender, clientDTO.gender) &amp;&amp;</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        Objects.equals(this.age, clientDTO.age) &amp;&amp;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        Objects.equals(this.identification, clientDTO.identification) &amp;&amp;</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        Objects.equals(this.address, clientDTO.address) &amp;&amp;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        Objects.equals(this.phone, clientDTO.phone) &amp;&amp;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        Objects.equals(this.password, clientDTO.password) &amp;&amp;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        Objects.equals(this.status, clientDTO.status);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L245">    return Objects.hash(clientId, name, gender, age, identification, address, phone, password, status);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L250">    StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L251">    sb.append(&quot;class ClientDTO {\n&quot;);</span>
+<span class="nc" id="L252">    sb.append(&quot;    clientId: &quot;).append(toIndentedString(clientId)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L253">    sb.append(&quot;    name: &quot;).append(toIndentedString(name)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L254">    sb.append(&quot;    gender: &quot;).append(toIndentedString(gender)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L255">    sb.append(&quot;    age: &quot;).append(toIndentedString(age)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L256">    sb.append(&quot;    identification: &quot;).append(toIndentedString(identification)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L257">    sb.append(&quot;    address: &quot;).append(toIndentedString(address)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L258">    sb.append(&quot;    phone: &quot;).append(toIndentedString(phone)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L259">    sb.append(&quot;    password: &quot;).append(toIndentedString(password)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L260">    sb.append(&quot;    status: &quot;).append(toIndentedString(status)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L261">    sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L262">    return sb.toString();</span>
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+<span class="nc bnc" id="L270" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L271">      return &quot;null&quot;;</span>
+    }
+<span class="nc" id="L273">    return o.toString().replace(&quot;\n&quot;, &quot;\n    &quot;);</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

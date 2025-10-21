@@ -1,0 +1,49 @@
+# Archivos y directorios a ignorar durante el build de Docker
+
+# Gradle
+.gradle/
+build/
+!build/libs/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Test reports
+bin/
+build/reports/
+build/test-results/
+
+# Gradle wrapper (mantener gradlew y gradle/)
+# No ignorar gradlew y gradle/ ya que son necesarios para el build

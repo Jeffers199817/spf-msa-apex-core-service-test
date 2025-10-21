@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.controller</a> &gt; <span class="el_source">TransactionController.java</span></div><h1>TransactionController.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.controller;
+
+import com.pichincha.spfmsaapexcoreservice.api.TransactionsApi;
+import com.pichincha.spfmsaapexcoreservice.domain.Transaction;
+import com.pichincha.spfmsaapexcoreservice.exception.ResourceNotFoundException;
+import com.pichincha.spfmsaapexcoreservice.model.TransactionDTO;
+import com.pichincha.spfmsaapexcoreservice.service.TransactionService;
+import com.pichincha.spfmsaapexcoreservice.service.mapper.TransactionMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+<span class="fc" id="L16">@Slf4j</span>
+@RestController
+@RequiredArgsConstructor
+public class TransactionController implements TransactionsApi {
+
+  private final TransactionService transactionService;
+  private final TransactionMapper transactionMapper;
+
+  @Override
+  public ResponseEntity&lt;TransactionDTO&gt; createTransaction(TransactionDTO transactionDTO) {
+<span class="fc" id="L26">    log.info(&quot;Creating transaction of type: {} with amount: {}&quot;, </span>
+<span class="fc" id="L27">      transactionDTO.getTransactionType(), transactionDTO.getAmount());</span>
+<span class="fc" id="L28">    Transaction transaction = transactionMapper.toEntity(transactionDTO);</span>
+<span class="fc" id="L29">    Transaction savedTransaction = transactionService.createTransaction(transaction);</span>
+<span class="fc" id="L30">    log.info(&quot;Transaction created successfully with ID: {}&quot;, savedTransaction.getTransactionId());</span>
+<span class="fc" id="L31">    return ResponseEntity.ok(transactionMapper.toDto(savedTransaction));</span>
+  }
+
+  @Override
+  public ResponseEntity&lt;Void&gt; deleteTransaction(Long transactionId) {
+<span class="nc" id="L36">    log.info(&quot;Deleting transaction with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L37">    transactionService.deleteTransaction(transactionId);</span>
+<span class="nc" id="L38">    log.info(&quot;Transaction deleted successfully with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L39">    return ResponseEntity.ok().build();</span>
+  }
+
+  @Override
+  public ResponseEntity&lt;List&lt;TransactionDTO&gt;&gt; getAllTransactions() {
+<span class="nc" id="L44">    log.info(&quot;Fetching all transactions&quot;);</span>
+<span class="nc" id="L45">    List&lt;Transaction&gt; transactions = transactionService.getAllTransactions();</span>
+<span class="nc" id="L46">    List&lt;TransactionDTO&gt; transactionDTOs = transactions.stream()</span>
+<span class="nc" id="L47">      .map(transactionMapper::toDto)</span>
+<span class="nc" id="L48">      .toList();</span>
+<span class="nc" id="L49">    log.info(&quot;Total transactions found: {}&quot;, transactionDTOs.size());</span>
+<span class="nc" id="L50">    return ResponseEntity.ok(transactionDTOs);</span>
+  }
+
+  @Override
+  public ResponseEntity&lt;TransactionDTO&gt; findTransactionById(Long transactionId) {
+<span class="nc" id="L55">    log.info(&quot;Fetching transaction with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L56">    Transaction transaction = transactionService.findTransactionById(transactionId)</span>
+<span class="nc" id="L57">      .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Transaction not found with id: &quot; + transactionId));</span>
+<span class="nc" id="L58">    log.info(&quot;Transaction found: Type={}, Amount={}&quot;, </span>
+<span class="nc" id="L59">      transaction.getTransactionType(), transaction.getAmount());</span>
+<span class="nc" id="L60">    return ResponseEntity.ok(transactionMapper.toDto(transaction));</span>
+  }
+
+  @Override
+  public ResponseEntity&lt;TransactionDTO&gt; updateTransaction(
+    Long transactionId,
+    TransactionDTO transactionDTO
+  ) {
+<span class="nc" id="L68">    log.info(&quot;Updating transaction with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L69">    Transaction transaction = transactionMapper.toEntity(transactionDTO);</span>
+<span class="nc" id="L70">    Transaction updatedTransaction = transactionService.updateTransaction(transactionId, transaction);</span>
+<span class="nc" id="L71">    log.info(&quot;Transaction updated successfully with ID: {}&quot;, updatedTransaction.getTransactionId());</span>
+<span class="nc" id="L72">    return ResponseEntity.ok(transactionMapper.toDto(updatedTransaction));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

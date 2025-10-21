@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.service.impl</a> &gt; <span class="el_source">TransactionServiceImpl.java</span></div><h1>TransactionServiceImpl.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.service.impl;
+import com.pichincha.spfmsaapexcoreservice.domain.Account;
+import com.pichincha.spfmsaapexcoreservice.domain.Transaction;
+import com.pichincha.spfmsaapexcoreservice.domain.enums.TransactionType;
+import com.pichincha.spfmsaapexcoreservice.exception.InsufficientBalanceException;
+import com.pichincha.spfmsaapexcoreservice.exception.ResourceNotFoundException;
+import com.pichincha.spfmsaapexcoreservice.repository.AccountRepository;
+import com.pichincha.spfmsaapexcoreservice.repository.TransactionRepository;
+import com.pichincha.spfmsaapexcoreservice.service.TransactionService;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+<span class="fc" id="L18">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class TransactionServiceImpl implements TransactionService {
+
+  private final TransactionRepository transactionRepository;
+  private final AccountRepository accountRepository;
+
+  @Override
+  @Transactional
+  public Transaction createTransaction(Transaction transaction) {
+<span class="pc bpc" id="L29" title="1 of 4 branches missed.">    if (transaction.getAccount() == null || transaction.getAccount().getAccountId() == null) {</span>
+<span class="fc" id="L30">      log.error(&quot;Account is required for transaction&quot;);</span>
+<span class="fc" id="L31">      throw new IllegalArgumentException(&quot;Account is required for transaction&quot;);</span>
+    }
+
+<span class="fc" id="L34">    Long accountId = transaction.getAccount().getAccountId();</span>
+<span class="fc" id="L35">    Account account = accountRepository.findById(accountId)</span>
+<span class="fc" id="L36">      .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L37">        log.error(&quot;Account not found with ID: {}&quot;, accountId);</span>
+<span class="fc" id="L38">        return new ResourceNotFoundException(&quot;Account not found with id: &quot; + accountId);</span>
+      });
+
+<span class="fc" id="L41">    Double currentBalance = calculateCurrentBalance(account);</span>
+<span class="fc" id="L42">    Double newBalance = calculateNewBalance(currentBalance, transaction);</span>
+
+<span class="fc" id="L44">    transaction.setAccount(account);</span>
+<span class="fc" id="L45">    transaction.setDate(LocalDateTime.now());</span>
+<span class="fc" id="L46">    transaction.setBalance(newBalance);</span>
+
+<span class="fc" id="L48">    Transaction savedTransaction = transactionRepository.save(transaction);</span>
+<span class="fc" id="L49">    log.info(&quot;Transaction created with ID: {}&quot;, savedTransaction.getTransactionId());</span>
+<span class="fc" id="L50">    return savedTransaction;</span>
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List&lt;Transaction&gt; getAllTransactions() {
+<span class="fc" id="L56">    return transactionRepository.findAll();</span>
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional&lt;Transaction&gt; findTransactionById(Long transactionId) {
+<span class="fc" id="L62">    return transactionRepository.findById(transactionId);</span>
+  }
+
+  @Override
+  @Transactional
+  public Transaction updateTransaction(Long transactionId, Transaction transaction) {
+<span class="fc" id="L68">    log.info(&quot;Updating transaction ID: {}&quot;, transactionId);</span>
+    
+<span class="fc" id="L70">    return transactionRepository.findById(transactionId)</span>
+<span class="fc" id="L71">      .map(existingTransaction -&gt; {</span>
+<span class="fc" id="L72">        Account account = existingTransaction.getAccount();</span>
+<span class="fc" id="L73">        List&lt;Transaction&gt; allTransactions = transactionRepository</span>
+<span class="fc" id="L74">          .findByAccountOrderByDateAsc(account);</span>
+        
+<span class="fc" id="L76">        existingTransaction.setDate(transaction.getDate());</span>
+<span class="fc" id="L77">        existingTransaction.setTransactionType(transaction.getTransactionType());</span>
+<span class="fc" id="L78">        existingTransaction.setAmount(transaction.getAmount());</span>
+        
+<span class="fc" id="L80">        recalculateBalancesFromTransaction(allTransactions, existingTransaction, account);</span>
+        
+<span class="fc" id="L82">        Transaction updatedTransaction = transactionRepository.save(existingTransaction);</span>
+<span class="fc" id="L83">        log.info(&quot;Transaction updated: {}&quot;, updatedTransaction.getTransactionId());</span>
+<span class="fc" id="L84">        return updatedTransaction;</span>
+      })
+<span class="fc" id="L86">      .orElseThrow(() -&gt; {</span>
+<span class="nc" id="L87">        log.error(&quot;Transaction not found with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L88">        return new ResourceNotFoundException(&quot;Transaction not found with id: &quot; + transactionId);</span>
+      });
+  }
+  
+  /**
+   * Recalculates balances from modified transaction onwards
+   */
+  private void recalculateBalancesFromTransaction(List&lt;Transaction&gt; allTransactions, 
+                                                    Transaction modifiedTransaction, 
+                                                    Account account) {
+<span class="fc" id="L98">    allTransactions.sort((t1, t2) -&gt; t1.getDate().compareTo(t2.getDate()));</span>
+    
+<span class="fc" id="L100">    boolean foundModified = false;</span>
+<span class="fc" id="L101">    Double previousBalance = account.getInitialBalance();</span>
+    
+<span class="fc bfc" id="L103" title="All 2 branches covered.">    for (Transaction trans : allTransactions) {</span>
+<span class="fc bfc" id="L104" title="All 4 branches covered.">      if (!foundModified &amp;&amp; !trans.getTransactionId().equals(modifiedTransaction.getTransactionId())) {</span>
+<span class="fc" id="L105">        previousBalance = trans.getBalance();</span>
+      } else {
+<span class="fc" id="L107">        foundModified = true;</span>
+<span class="fc" id="L108">        Double newBalance = calculateNewBalanceForUpdate(previousBalance, trans);</span>
+<span class="fc" id="L109">        trans.setBalance(newBalance);</span>
+<span class="fc" id="L110">        transactionRepository.save(trans);</span>
+<span class="fc" id="L111">        previousBalance = newBalance;</span>
+      }
+<span class="fc" id="L113">    }</span>
+<span class="fc" id="L114">  }</span>
+  
+  /**
+   * Calculates new balance during update
+   */
+  private Double calculateNewBalanceForUpdate(Double previousBalance, Transaction transaction) {
+<span class="fc" id="L120">    Double amount = transaction.getAmount();</span>
+<span class="fc" id="L121">    Double newBalance = previousBalance;</span>
+    
+<span class="fc bfc" id="L123" title="All 2 branches covered.">    if (transaction.getTransactionType() == TransactionType.WITHDRAWAL) {</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      if (amount &gt; 0) {</span>
+<span class="fc" id="L125">        amount = -amount;</span>
+<span class="fc" id="L126">        transaction.setAmount(amount);</span>
+      }
+<span class="fc" id="L128">      newBalance = previousBalance + amount;</span>
+      
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      if (newBalance &lt; 0) {</span>
+<span class="nc" id="L131">        log.error(&quot;Insufficient balance. Previous: {}, Amount: {}, Result: {}&quot;, </span>
+          previousBalance, amount, newBalance);
+<span class="nc" id="L133">        throw new InsufficientBalanceException(&quot;Saldo no disponible al recalcular transacciones&quot;);</span>
+      }
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">    } else if (transaction.getTransactionType() == TransactionType.DEPOSIT) {</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">      if (amount &lt; 0) {</span>
+<span class="nc" id="L137">        amount = Math.abs(amount);</span>
+<span class="nc" id="L138">        transaction.setAmount(amount);</span>
+      }
+<span class="fc" id="L140">      newBalance = previousBalance + amount;</span>
+    }
+    
+<span class="fc" id="L143">    return newBalance;</span>
+  }
+
+  @Override
+  @Transactional
+  public void deleteTransaction(Long transactionId) {
+<span class="fc" id="L149">    log.info(&quot;Deleting transaction ID: {}&quot;, transactionId);</span>
+    
+<span class="fc" id="L151">    Transaction transactionToDelete = transactionRepository.findById(transactionId)</span>
+<span class="fc" id="L152">      .orElseThrow(() -&gt; {</span>
+<span class="nc" id="L153">        log.error(&quot;Transaction not found with ID: {}&quot;, transactionId);</span>
+<span class="nc" id="L154">        return new ResourceNotFoundException(&quot;Transaction not found with id: &quot; + transactionId);</span>
+      });
+    
+<span class="fc" id="L157">    Account account = transactionToDelete.getAccount();</span>
+<span class="fc" id="L158">    LocalDateTime deletedTransactionDate = transactionToDelete.getDate();</span>
+    
+<span class="fc" id="L160">    List&lt;Transaction&gt; allTransactions = transactionRepository</span>
+<span class="fc" id="L161">      .findByAccountOrderByDateAsc(account);</span>
+    
+<span class="fc" id="L163">    transactionRepository.deleteById(transactionId);</span>
+<span class="fc" id="L164">    recalculateBalancesAfterDeletion(allTransactions, transactionId, deletedTransactionDate, account);</span>
+<span class="fc" id="L165">  }</span>
+  
+  /**
+   * Recalculates balances after transaction deletion
+   */
+  private void recalculateBalancesAfterDeletion(List&lt;Transaction&gt; allTransactions, 
+                                                  Long deletedTransactionId,
+                                                  LocalDateTime deletedTransactionDate,
+                                                  Account account) {
+<span class="fc" id="L174">    List&lt;Transaction&gt; subsequentTransactions = allTransactions.stream()</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">      .filter(t -&gt; !t.getTransactionId().equals(deletedTransactionId))</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">      .filter(t -&gt; t.getDate().isAfter(deletedTransactionDate) || </span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                   t.getDate().isEqual(deletedTransactionDate))</span>
+<span class="pc" id="L178">      .sorted((t1, t2) -&gt; t1.getDate().compareTo(t2.getDate()))</span>
+<span class="fc" id="L179">      .toList();</span>
+    
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (subsequentTransactions.isEmpty()) {</span>
+<span class="nc" id="L182">      return;</span>
+    }
+    
+<span class="fc" id="L185">    Double previousBalance = calculateBalanceBeforeTransaction(</span>
+      allTransactions, 
+<span class="fc" id="L187">      subsequentTransactions.get(0), </span>
+      deletedTransactionId,
+      account
+    );
+    
+<span class="fc bfc" id="L192" title="All 2 branches covered.">    for (Transaction trans : subsequentTransactions) {</span>
+<span class="fc" id="L193">      Double newBalance = calculateNewBalanceForUpdate(previousBalance, trans);</span>
+<span class="fc" id="L194">      trans.setBalance(newBalance);</span>
+<span class="fc" id="L195">      transactionRepository.save(trans);</span>
+<span class="fc" id="L196">      previousBalance = newBalance;</span>
+<span class="fc" id="L197">    }</span>
+<span class="fc" id="L198">  }</span>
+  
+  /**
+   * Calculates balance before a specific transaction (excluding deleted one)
+   */
+  private Double calculateBalanceBeforeTransaction(List&lt;Transaction&gt; allTransactions,
+                                                     Transaction targetTransaction,
+                                                     Long excludedTransactionId,
+                                                     Account account) {
+<span class="fc" id="L207">    List&lt;Transaction&gt; previousTransactions = allTransactions.stream()</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">      .filter(t -&gt; !t.getTransactionId().equals(excludedTransactionId))</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">      .filter(t -&gt; !t.getTransactionId().equals(targetTransaction.getTransactionId()))</span>
+<span class="fc" id="L210">      .filter(t -&gt; t.getDate().isBefore(targetTransaction.getDate()))</span>
+<span class="pc" id="L211">      .sorted((t1, t2) -&gt; t1.getDate().compareTo(t2.getDate()))</span>
+<span class="fc" id="L212">      .toList();</span>
+    
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">    if (previousTransactions.isEmpty()) {</span>
+<span class="nc" id="L215">      return account.getInitialBalance();</span>
+    }
+    
+<span class="fc" id="L218">    return previousTransactions.get(previousTransactions.size() - 1).getBalance();</span>
+  }
+
+  private Double calculateCurrentBalance(Account account) {
+<span class="fc" id="L222">    List&lt;Transaction&gt; transactions = account.getTransactions();</span>
+    
+<span class="fc bfc" id="L224" title="All 2 branches covered.">    if (transactions.isEmpty()) {</span>
+<span class="fc" id="L225">      return account.getInitialBalance();</span>
+    }
+    
+<span class="fc" id="L228">    return transactions.get(transactions.size() - 1).getBalance();</span>
+  }
+
+  private Double calculateNewBalance(Double currentBalance, Transaction transaction) {
+<span class="fc" id="L232">    Double newBalance = currentBalance;</span>
+
+<span class="fc bfc" id="L234" title="All 2 branches covered.">    if (transaction.getTransactionType() == TransactionType.WITHDRAWAL) {</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">      if (transaction.getAmount() &gt; 0) {</span>
+<span class="fc" id="L236">        transaction.setAmount(-transaction.getAmount());</span>
+      }
+<span class="fc" id="L238">      newBalance = currentBalance + transaction.getAmount();</span>
+      
+<span class="fc bfc" id="L240" title="All 2 branches covered.">      if (newBalance &lt; 0) {</span>
+<span class="fc" id="L241">        log.error(&quot;Insufficient balance. Current: {}, Withdrawal: {}, Result: {}&quot;, </span>
+<span class="fc" id="L242">          currentBalance, transaction.getAmount(), newBalance);</span>
+<span class="fc" id="L243">        throw new InsufficientBalanceException(&quot;Saldo no disponible&quot;);</span>
+      }
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    } else if (transaction.getTransactionType() == TransactionType.DEPOSIT) {</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">      if (transaction.getAmount() &lt; 0) {</span>
+<span class="nc" id="L247">        transaction.setAmount(Math.abs(transaction.getAmount()));</span>
+      }
+<span class="fc" id="L249">      newBalance = currentBalance + transaction.getAmount();</span>
+    }
+
+<span class="fc" id="L252">    return newBalance;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

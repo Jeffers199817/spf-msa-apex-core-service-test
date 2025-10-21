@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2025-10-20T08:30:13.477Z" hostname="DESKTOP-58RNR6C" time="0.747">
+  <properties/>
+  <testcase name="createTransaction_Withdrawal_ShouldDecreaseBalance()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.613"/>
+  <testcase name="deleteTransaction_ShouldRecalculateSubsequentBalances()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.018"/>
+  <testcase name="createTransaction_WithNullAccount_ShouldThrowException()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.021"/>
+  <testcase name="findTransactionById_WithExistingId_ShouldReturnTransaction()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.014"/>
+  <testcase name="createTransaction_WithInsufficientBalance_ShouldThrowException()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.008"/>
+  <testcase name="createTransaction_Deposit_ShouldIncreaseBalance()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.007"/>
+  <testcase name="updateTransaction_ShouldRecalculateSubsequentBalances()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.011"/>
+  <testcase name="getAllTransactions_ShouldReturnAllTransactions()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.024"/>
+  <testcase name="findTransactionById_WithNonExistingId_ShouldReturnEmpty()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.006"/>
+  <testcase name="createTransaction_WithNonExistentAccount_ShouldThrowException()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.006"/>
+  <testcase name="createTransaction_WithPreviousTransactions_ShouldCalculateCorrectBalance()" classname="com.pichincha.spfmsaapexcoreservice.service.impl.TransactionServiceImplTest" time="0.005"/>
+  <system-out><![CDATA[2025-10-20 03:30:13 - Transaction created with ID: 1
+2025-10-20 03:30:14 - Deleting transaction ID: 2
+2025-10-20 03:30:14 - Account is required for transaction
+2025-10-20 03:30:14 - Insufficient balance. Current: 1000.0, Withdrawal: -1500.0, Result: -500.0
+2025-10-20 03:30:14 - Transaction created with ID: 1
+2025-10-20 03:30:14 - Updating transaction ID: 2
+2025-10-20 03:30:14 - Transaction updated: 2
+2025-10-20 03:30:14 - Account not found with ID: 1
+2025-10-20 03:30:14 - Transaction created with ID: 2
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

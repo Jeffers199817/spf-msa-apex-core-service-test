@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.model</a> &gt; <span class="el_source">ReportDTO.java</span></div><h1>ReportDTO.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.model;
+
+import java.net.URI;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import jakarta.annotation.Generated;
+
+/**
+ * ReportDTO
+ */
+
+@Generated(value = &quot;org.openapitools.codegen.languages.SpringCodegen&quot;, date = &quot;2025-10-20T02:43:05.386267500-05:00[America/Bogota]&quot;, comments = &quot;Generator version: 7.15.0&quot;)
+<span class="nc" id="L25">public class ReportDTO {</span>
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  private @Nullable LocalDate date;
+
+  private @Nullable String client;
+
+  private @Nullable String accountNumber;
+
+  private @Nullable String type;
+
+  private @Nullable Double initialBalance;
+
+  private @Nullable Boolean status;
+
+  private @Nullable Double movement;
+
+  private @Nullable Double availableBalance;
+
+  private @Nullable Double totalDebits;
+
+  private @Nullable Double totalCredits;
+
+  public ReportDTO date(@Nullable LocalDate date) {
+<span class="nc" id="L49">    this.date = date;</span>
+<span class="nc" id="L50">    return this;</span>
+  }
+
+  /**
+   * Get date
+   * @return date
+   */
+  @Valid 
+  @Schema(name = &quot;date&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;date&quot;)
+  public @Nullable LocalDate getDate() {
+<span class="nc" id="L61">    return date;</span>
+  }
+
+  public void setDate(@Nullable LocalDate date) {
+<span class="nc" id="L65">    this.date = date;</span>
+<span class="nc" id="L66">  }</span>
+
+  public ReportDTO client(@Nullable String client) {
+<span class="nc" id="L69">    this.client = client;</span>
+<span class="nc" id="L70">    return this;</span>
+  }
+
+  /**
+   * Get client
+   * @return client
+   */
+  
+  @Schema(name = &quot;client&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;client&quot;)
+  public @Nullable String getClient() {
+<span class="nc" id="L81">    return client;</span>
+  }
+
+  public void setClient(@Nullable String client) {
+<span class="nc" id="L85">    this.client = client;</span>
+<span class="nc" id="L86">  }</span>
+
+  public ReportDTO accountNumber(@Nullable String accountNumber) {
+<span class="nc" id="L89">    this.accountNumber = accountNumber;</span>
+<span class="nc" id="L90">    return this;</span>
+  }
+
+  /**
+   * Get accountNumber
+   * @return accountNumber
+   */
+  
+  @Schema(name = &quot;accountNumber&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;accountNumber&quot;)
+  public @Nullable String getAccountNumber() {
+<span class="nc" id="L101">    return accountNumber;</span>
+  }
+
+  public void setAccountNumber(@Nullable String accountNumber) {
+<span class="nc" id="L105">    this.accountNumber = accountNumber;</span>
+<span class="nc" id="L106">  }</span>
+
+  public ReportDTO type(@Nullable String type) {
+<span class="nc" id="L109">    this.type = type;</span>
+<span class="nc" id="L110">    return this;</span>
+  }
+
+  /**
+   * Get type
+   * @return type
+   */
+  
+  @Schema(name = &quot;type&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;type&quot;)
+  public @Nullable String getType() {
+<span class="nc" id="L121">    return type;</span>
+  }
+
+  public void setType(@Nullable String type) {
+<span class="nc" id="L125">    this.type = type;</span>
+<span class="nc" id="L126">  }</span>
+
+  public ReportDTO initialBalance(@Nullable Double initialBalance) {
+<span class="nc" id="L129">    this.initialBalance = initialBalance;</span>
+<span class="nc" id="L130">    return this;</span>
+  }
+
+  /**
+   * Get initialBalance
+   * @return initialBalance
+   */
+  
+  @Schema(name = &quot;initialBalance&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;initialBalance&quot;)
+  public @Nullable Double getInitialBalance() {
+<span class="nc" id="L141">    return initialBalance;</span>
+  }
+
+  public void setInitialBalance(@Nullable Double initialBalance) {
+<span class="nc" id="L145">    this.initialBalance = initialBalance;</span>
+<span class="nc" id="L146">  }</span>
+
+  public ReportDTO status(@Nullable Boolean status) {
+<span class="nc" id="L149">    this.status = status;</span>
+<span class="nc" id="L150">    return this;</span>
+  }
+
+  /**
+   * Get status
+   * @return status
+   */
+  
+  @Schema(name = &quot;status&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;status&quot;)
+  public @Nullable Boolean getStatus() {
+<span class="nc" id="L161">    return status;</span>
+  }
+
+  public void setStatus(@Nullable Boolean status) {
+<span class="nc" id="L165">    this.status = status;</span>
+<span class="nc" id="L166">  }</span>
+
+  public ReportDTO movement(@Nullable Double movement) {
+<span class="nc" id="L169">    this.movement = movement;</span>
+<span class="nc" id="L170">    return this;</span>
+  }
+
+  /**
+   * Get movement
+   * @return movement
+   */
+  
+  @Schema(name = &quot;movement&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;movement&quot;)
+  public @Nullable Double getMovement() {
+<span class="nc" id="L181">    return movement;</span>
+  }
+
+  public void setMovement(@Nullable Double movement) {
+<span class="nc" id="L185">    this.movement = movement;</span>
+<span class="nc" id="L186">  }</span>
+
+  public ReportDTO availableBalance(@Nullable Double availableBalance) {
+<span class="nc" id="L189">    this.availableBalance = availableBalance;</span>
+<span class="nc" id="L190">    return this;</span>
+  }
+
+  /**
+   * Get availableBalance
+   * @return availableBalance
+   */
+  
+  @Schema(name = &quot;availableBalance&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;availableBalance&quot;)
+  public @Nullable Double getAvailableBalance() {
+<span class="nc" id="L201">    return availableBalance;</span>
+  }
+
+  public void setAvailableBalance(@Nullable Double availableBalance) {
+<span class="nc" id="L205">    this.availableBalance = availableBalance;</span>
+<span class="nc" id="L206">  }</span>
+
+  public ReportDTO totalDebits(@Nullable Double totalDebits) {
+<span class="nc" id="L209">    this.totalDebits = totalDebits;</span>
+<span class="nc" id="L210">    return this;</span>
+  }
+
+  /**
+   * Total of all debits in the period
+   * @return totalDebits
+   */
+  
+  @Schema(name = &quot;totalDebits&quot;, description = &quot;Total of all debits in the period&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;totalDebits&quot;)
+  public @Nullable Double getTotalDebits() {
+<span class="nc" id="L221">    return totalDebits;</span>
+  }
+
+  public void setTotalDebits(@Nullable Double totalDebits) {
+<span class="nc" id="L225">    this.totalDebits = totalDebits;</span>
+<span class="nc" id="L226">  }</span>
+
+  public ReportDTO totalCredits(@Nullable Double totalCredits) {
+<span class="nc" id="L229">    this.totalCredits = totalCredits;</span>
+<span class="nc" id="L230">    return this;</span>
+  }
+
+  /**
+   * Total of all credits in the period
+   * @return totalCredits
+   */
+  
+  @Schema(name = &quot;totalCredits&quot;, description = &quot;Total of all credits in the period&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;totalCredits&quot;)
+  public @Nullable Double getTotalCredits() {
+<span class="nc" id="L241">    return totalCredits;</span>
+  }
+
+  public void setTotalCredits(@Nullable Double totalCredits) {
+<span class="nc" id="L245">    this.totalCredits = totalCredits;</span>
+<span class="nc" id="L246">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L250" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L251">      return true;</span>
+    }
+<span class="nc bnc" id="L253" title="All 4 branches missed.">    if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L254">      return false;</span>
+    }
+<span class="nc" id="L256">    ReportDTO reportDTO = (ReportDTO) o;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    return Objects.equals(this.date, reportDTO.date) &amp;&amp;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        Objects.equals(this.client, reportDTO.client) &amp;&amp;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        Objects.equals(this.accountNumber, reportDTO.accountNumber) &amp;&amp;</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        Objects.equals(this.type, reportDTO.type) &amp;&amp;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        Objects.equals(this.initialBalance, reportDTO.initialBalance) &amp;&amp;</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        Objects.equals(this.status, reportDTO.status) &amp;&amp;</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        Objects.equals(this.movement, reportDTO.movement) &amp;&amp;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        Objects.equals(this.availableBalance, reportDTO.availableBalance) &amp;&amp;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        Objects.equals(this.totalDebits, reportDTO.totalDebits) &amp;&amp;</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        Objects.equals(this.totalCredits, reportDTO.totalCredits);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L271">    return Objects.hash(date, client, accountNumber, type, initialBalance, status, movement, availableBalance, totalDebits, totalCredits);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L276">    StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L277">    sb.append(&quot;class ReportDTO {\n&quot;);</span>
+<span class="nc" id="L278">    sb.append(&quot;    date: &quot;).append(toIndentedString(date)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L279">    sb.append(&quot;    client: &quot;).append(toIndentedString(client)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L280">    sb.append(&quot;    accountNumber: &quot;).append(toIndentedString(accountNumber)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L281">    sb.append(&quot;    type: &quot;).append(toIndentedString(type)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L282">    sb.append(&quot;    initialBalance: &quot;).append(toIndentedString(initialBalance)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L283">    sb.append(&quot;    status: &quot;).append(toIndentedString(status)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L284">    sb.append(&quot;    movement: &quot;).append(toIndentedString(movement)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L285">    sb.append(&quot;    availableBalance: &quot;).append(toIndentedString(availableBalance)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L286">    sb.append(&quot;    totalDebits: &quot;).append(toIndentedString(totalDebits)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L287">    sb.append(&quot;    totalCredits: &quot;).append(toIndentedString(totalCredits)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L288">    sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L289">    return sb.toString();</span>
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+<span class="nc bnc" id="L297" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L298">      return &quot;null&quot;;</span>
+    }
+<span class="nc" id="L300">    return o.toString().replace(&quot;\n&quot;, &quot;\n    &quot;);</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

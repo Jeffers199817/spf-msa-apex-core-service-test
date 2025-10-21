@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PdfReportServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.service.impl</a> &gt; <span class="el_source">PdfReportServiceImpl.java</span></div><h1>PdfReportServiceImpl.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.service.impl;
+
+import com.pichincha.spfmsaapexcoreservice.model.ReportDTO;
+import com.pichincha.spfmsaapexcoreservice.service.PdfReportService;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
+import org.springframework.stereotype.Service;
+
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+@Service
+<span class="fc" id="L17">public class PdfReportServiceImpl implements PdfReportService {</span>
+
+    @Override
+    public byte[] generateAccountStatementPdf(List&lt;ReportDTO&gt; reportData) {
+        try {
+<span class="nc" id="L22">            JasperDesign jasperDesign = createReportDesign();</span>
+<span class="nc" id="L23">            JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);</span>
+<span class="nc" id="L24">            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(</span>
+<span class="nc" id="L25">                convertReportDTOToMap(reportData)</span>
+            );
+            
+<span class="nc" id="L28">            Map&lt;String, Object&gt; parameters = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L29">            parameters.put(&quot;ReportTitle&quot;, &quot;Estado de Cuenta Bancario&quot;);</span>
+            
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            if (!reportData.isEmpty()) {</span>
+<span class="nc" id="L32">                parameters.put(&quot;ClientName&quot;, reportData.get(0).getClient());</span>
+<span class="nc" id="L33">                parameters.put(&quot;AccountNumber&quot;, reportData.get(0).getAccountNumber());</span>
+            }
+            
+<span class="nc" id="L36">            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);</span>
+<span class="nc" id="L37">            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();</span>
+<span class="nc" id="L38">            JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);</span>
+            
+<span class="nc" id="L40">            return outputStream.toByteArray();</span>
+            
+<span class="nc" id="L42">        } catch (JRException exception) {</span>
+<span class="nc" id="L43">            throw new RuntimeException(&quot;Error generating PDF report: &quot; + exception.getMessage(), exception);</span>
+        }
+    }
+    
+    private JasperDesign createReportDesign() throws JRException {
+<span class="nc" id="L48">        JasperDesign jasperDesign = new JasperDesign();</span>
+<span class="nc" id="L49">        jasperDesign.setName(&quot;AccountStatement&quot;);</span>
+<span class="nc" id="L50">        jasperDesign.setPageWidth(595);</span>
+<span class="nc" id="L51">        jasperDesign.setPageHeight(842);</span>
+<span class="nc" id="L52">        jasperDesign.setColumnWidth(515);</span>
+<span class="nc" id="L53">        jasperDesign.setColumnSpacing(0);</span>
+<span class="nc" id="L54">        jasperDesign.setLeftMargin(40);</span>
+<span class="nc" id="L55">        jasperDesign.setRightMargin(40);</span>
+<span class="nc" id="L56">        jasperDesign.setTopMargin(50);</span>
+<span class="nc" id="L57">        jasperDesign.setBottomMargin(50);</span>
+        
+<span class="nc" id="L59">        addParameters(jasperDesign);</span>
+<span class="nc" id="L60">        addFields(jasperDesign);</span>
+<span class="nc" id="L61">        addTitleBand(jasperDesign);</span>
+<span class="nc" id="L62">        addColumnHeaderBand(jasperDesign);</span>
+<span class="nc" id="L63">        addDetailBand(jasperDesign);</span>
+<span class="nc" id="L64">        addPageFooter(jasperDesign);</span>
+        
+<span class="nc" id="L66">        return jasperDesign;</span>
+    }
+    
+    private void addParameters(JasperDesign jasperDesign) throws JRException {
+<span class="nc" id="L70">        JRDesignParameter parameterTitle = new JRDesignParameter();</span>
+<span class="nc" id="L71">        parameterTitle.setName(&quot;ReportTitle&quot;);</span>
+<span class="nc" id="L72">        parameterTitle.setValueClass(String.class);</span>
+<span class="nc" id="L73">        jasperDesign.addParameter(parameterTitle);</span>
+        
+<span class="nc" id="L75">        JRDesignParameter parameterClientName = new JRDesignParameter();</span>
+<span class="nc" id="L76">        parameterClientName.setName(&quot;ClientName&quot;);</span>
+<span class="nc" id="L77">        parameterClientName.setValueClass(String.class);</span>
+<span class="nc" id="L78">        jasperDesign.addParameter(parameterClientName);</span>
+        
+<span class="nc" id="L80">        JRDesignParameter parameterAccountNumber = new JRDesignParameter();</span>
+<span class="nc" id="L81">        parameterAccountNumber.setName(&quot;AccountNumber&quot;);</span>
+<span class="nc" id="L82">        parameterAccountNumber.setValueClass(String.class);</span>
+<span class="nc" id="L83">        jasperDesign.addParameter(parameterAccountNumber);</span>
+<span class="nc" id="L84">    }</span>
+    
+    private void addFields(JasperDesign jasperDesign) throws JRException {
+<span class="nc" id="L87">        addField(jasperDesign, &quot;date&quot;, String.class);</span>
+<span class="nc" id="L88">        addField(jasperDesign, &quot;type&quot;, String.class);</span>
+<span class="nc" id="L89">        addField(jasperDesign, &quot;initialBalance&quot;, Double.class);</span>
+<span class="nc" id="L90">        addField(jasperDesign, &quot;movement&quot;, Double.class);</span>
+<span class="nc" id="L91">        addField(jasperDesign, &quot;availableBalance&quot;, Double.class);</span>
+<span class="nc" id="L92">        addField(jasperDesign, &quot;status&quot;, String.class);</span>
+<span class="nc" id="L93">    }</span>
+    
+    private void addField(JasperDesign jasperDesign, String fieldName, Class&lt;?&gt; fieldClass) throws JRException {
+<span class="nc" id="L96">        JRDesignField field = new JRDesignField();</span>
+<span class="nc" id="L97">        field.setName(fieldName);</span>
+<span class="nc" id="L98">        field.setValueClass(fieldClass);</span>
+<span class="nc" id="L99">        jasperDesign.addField(field);</span>
+<span class="nc" id="L100">    }</span>
+    
+    private void addTitleBand(JasperDesign jasperDesign) {
+<span class="nc" id="L103">        JRDesignBand titleBand = new JRDesignBand();</span>
+<span class="nc" id="L104">        titleBand.setHeight(140);</span>
+        
+        // Logo y nombre del banco NEXUS
+<span class="nc" id="L107">        JRDesignStaticText bankName = new JRDesignStaticText();</span>
+<span class="nc" id="L108">        bankName.setX(0);</span>
+<span class="nc" id="L109">        bankName.setY(5);</span>
+<span class="nc" id="L110">        bankName.setWidth(515);</span>
+<span class="nc" id="L111">        bankName.setHeight(35);</span>
+<span class="nc" id="L112">        bankName.setText(&quot;NEXUS&quot;);</span>
+<span class="nc" id="L113">        bankName.setFontSize(28f);</span>
+<span class="nc" id="L114">        bankName.setBold(true);</span>
+<span class="nc" id="L115">        bankName.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L116">        bankName.setForecolor(new Color(0, 51, 102)); // Azul corporativo</span>
+<span class="nc" id="L117">        titleBand.addElement(bankName);</span>
+        
+        // Subtítulo del banco
+<span class="nc" id="L120">        JRDesignStaticText bankSlogan = new JRDesignStaticText();</span>
+<span class="nc" id="L121">        bankSlogan.setX(0);</span>
+<span class="nc" id="L122">        bankSlogan.setY(38);</span>
+<span class="nc" id="L123">        bankSlogan.setWidth(515);</span>
+<span class="nc" id="L124">        bankSlogan.setHeight(15);</span>
+<span class="nc" id="L125">        bankSlogan.setText(&quot;Tu banco de confianza&quot;);</span>
+<span class="nc" id="L126">        bankSlogan.setFontSize(10f);</span>
+<span class="nc" id="L127">        bankSlogan.setItalic(true);</span>
+<span class="nc" id="L128">        bankSlogan.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L129">        bankSlogan.setForecolor(new Color(100, 100, 100));</span>
+<span class="nc" id="L130">        titleBand.addElement(bankSlogan);</span>
+        
+        // Línea separadora
+<span class="nc" id="L133">        JRDesignLine line1 = new JRDesignLine();</span>
+<span class="nc" id="L134">        line1.setX(0);</span>
+<span class="nc" id="L135">        line1.setY(58);</span>
+<span class="nc" id="L136">        line1.setWidth(515);</span>
+<span class="nc" id="L137">        line1.setHeight(0);</span>
+<span class="nc" id="L138">        line1.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L139">        titleBand.addElement(line1);</span>
+        
+        // Título del documento
+<span class="nc" id="L142">        JRDesignStaticText titleText = new JRDesignStaticText();</span>
+<span class="nc" id="L143">        titleText.setX(0);</span>
+<span class="nc" id="L144">        titleText.setY(65);</span>
+<span class="nc" id="L145">        titleText.setWidth(515);</span>
+<span class="nc" id="L146">        titleText.setHeight(25);</span>
+<span class="nc" id="L147">        titleText.setText(&quot;ESTADO DE CUENTA BANCARIO&quot;);</span>
+<span class="nc" id="L148">        titleText.setFontSize(16f);</span>
+<span class="nc" id="L149">        titleText.setBold(true);</span>
+<span class="nc" id="L150">        titleText.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L151">        titleBand.addElement(titleText);</span>
+        
+        // Información del cliente (con fondo)
+<span class="nc" id="L154">        JRDesignRectangle clientBox = new JRDesignRectangle();</span>
+<span class="nc" id="L155">        clientBox.setX(0);</span>
+<span class="nc" id="L156">        clientBox.setY(95);</span>
+<span class="nc" id="L157">        clientBox.setWidth(515);</span>
+<span class="nc" id="L158">        clientBox.setHeight(40);</span>
+<span class="nc" id="L159">        clientBox.setBackcolor(new Color(240, 248, 255)); // Azul muy claro</span>
+<span class="nc" id="L160">        clientBox.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L161">        titleBand.addElement(clientBox);</span>
+        
+<span class="nc" id="L163">        JRDesignTextField clientField = new JRDesignTextField();</span>
+<span class="nc" id="L164">        clientField.setX(10);</span>
+<span class="nc" id="L165">        clientField.setY(100);</span>
+<span class="nc" id="L166">        clientField.setWidth(250);</span>
+<span class="nc" id="L167">        clientField.setHeight(15);</span>
+<span class="nc" id="L168">        clientField.setExpression(createExpression(&quot;\&quot;Cliente: \&quot; + $P{ClientName}&quot;));</span>
+<span class="nc" id="L169">        clientField.setFontSize(11f);</span>
+<span class="nc" id="L170">        clientField.setBold(true);</span>
+<span class="nc" id="L171">        titleBand.addElement(clientField);</span>
+        
+<span class="nc" id="L173">        JRDesignTextField accountField = new JRDesignTextField();</span>
+<span class="nc" id="L174">        accountField.setX(10);</span>
+<span class="nc" id="L175">        accountField.setY(115);</span>
+<span class="nc" id="L176">        accountField.setWidth(250);</span>
+<span class="nc" id="L177">        accountField.setHeight(15);</span>
+<span class="nc" id="L178">        accountField.setExpression(createExpression(&quot;\&quot;Nº de Cuenta: \&quot; + $P{AccountNumber}&quot;));</span>
+<span class="nc" id="L179">        accountField.setFontSize(11f);</span>
+<span class="nc" id="L180">        clientField.setBold(true);</span>
+<span class="nc" id="L181">        titleBand.addElement(accountField);</span>
+        
+    // Fecha de generación del reporte (con hora, minutos y segundos)
+<span class="nc" id="L184">        JRDesignTextField dateField = new JRDesignTextField();</span>
+<span class="nc" id="L185">        dateField.setX(300);</span>
+<span class="nc" id="L186">        dateField.setY(100);</span>
+<span class="nc" id="L187">        dateField.setWidth(210);</span>
+<span class="nc" id="L188">        dateField.setHeight(15);</span>
+<span class="nc" id="L189">    dateField.setExpression(createExpression(&quot;\&quot;Fecha: \&quot; + new java.text.SimpleDateFormat(\&quot;dd/MM/yyyy HH:mm:ss\&quot;).format(new java.util.Date())&quot;));</span>
+<span class="nc" id="L190">        dateField.setFontSize(9f);</span>
+<span class="nc" id="L191">        dateField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L192">        titleBand.addElement(dateField);</span>
+        
+<span class="nc" id="L194">        jasperDesign.setTitle(titleBand);</span>
+<span class="nc" id="L195">    }</span>
+    
+    private void addColumnHeaderBand(JasperDesign jasperDesign) {
+<span class="nc" id="L198">        JRDesignBand columnHeaderBand = new JRDesignBand();</span>
+<span class="nc" id="L199">        columnHeaderBand.setHeight(30);</span>
+        
+        // Fondo azul para el encabezado
+<span class="nc" id="L202">        JRDesignRectangle headerBackground = new JRDesignRectangle();</span>
+<span class="nc" id="L203">        headerBackground.setX(0);</span>
+<span class="nc" id="L204">        headerBackground.setY(0);</span>
+<span class="nc" id="L205">        headerBackground.setWidth(515);</span>
+<span class="nc" id="L206">        headerBackground.setHeight(30);</span>
+<span class="nc" id="L207">        headerBackground.setBackcolor(new Color(0, 51, 102)); // Azul corporativo</span>
+<span class="nc" id="L208">        headerBackground.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L209">        columnHeaderBand.addElement(headerBackground);</span>
+        
+<span class="nc" id="L211">        String[] headers = {&quot;Fecha&quot;, &quot;Tipo de Cuenta&quot;, &quot;Saldo Inicial&quot;, &quot;Movimiento&quot;, &quot;Saldo Final&quot;, &quot;Estado&quot;};</span>
+<span class="nc" id="L212">        int[] widths = {70, 100, 85, 75, 85, 100};</span>
+<span class="nc" id="L213">        int xPosition = 0;</span>
+        
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        for (int i = 0; i &lt; headers.length; i++) {</span>
+<span class="nc" id="L216">            JRDesignStaticText headerText = new JRDesignStaticText();</span>
+<span class="nc" id="L217">            headerText.setX(xPosition);</span>
+<span class="nc" id="L218">            headerText.setY(5);</span>
+<span class="nc" id="L219">            headerText.setWidth(widths[i]);</span>
+<span class="nc" id="L220">            headerText.setHeight(20);</span>
+<span class="nc" id="L221">            headerText.setText(headers[i]);</span>
+<span class="nc" id="L222">            headerText.setFontSize(9f);</span>
+<span class="nc" id="L223">            headerText.setBold(true);</span>
+<span class="nc" id="L224">            headerText.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L225">            headerText.setForecolor(Color.WHITE); // Texto blanco</span>
+<span class="nc" id="L226">            columnHeaderBand.addElement(headerText);</span>
+<span class="nc" id="L227">            xPosition += widths[i];</span>
+        }
+        
+<span class="nc" id="L230">        jasperDesign.setColumnHeader(columnHeaderBand);</span>
+<span class="nc" id="L231">    }</span>
+    
+    private void addDetailBand(JasperDesign jasperDesign) {
+<span class="nc" id="L234">        JRDesignBand detailBand = new JRDesignBand();</span>
+<span class="nc" id="L235">        detailBand.setHeight(25);</span>
+        
+        // Fondo alternado (se puede hacer con expresiones condicionales)
+<span class="nc" id="L238">        JRDesignRectangle rowBackground = new JRDesignRectangle();</span>
+<span class="nc" id="L239">        rowBackground.setX(0);</span>
+<span class="nc" id="L240">        rowBackground.setY(0);</span>
+<span class="nc" id="L241">        rowBackground.setWidth(515);</span>
+<span class="nc" id="L242">        rowBackground.setHeight(25);</span>
+<span class="nc" id="L243">        rowBackground.setBackcolor(new Color(250, 250, 250));</span>
+<span class="nc" id="L244">        rowBackground.setForecolor(new Color(200, 200, 200));</span>
+<span class="nc" id="L245">        detailBand.addElement(rowBackground);</span>
+        
+        // Línea inferior de cada fila
+<span class="nc" id="L248">        JRDesignLine rowLine = new JRDesignLine();</span>
+<span class="nc" id="L249">        rowLine.setX(0);</span>
+<span class="nc" id="L250">        rowLine.setY(24);</span>
+<span class="nc" id="L251">        rowLine.setWidth(515);</span>
+<span class="nc" id="L252">        rowLine.setHeight(0);</span>
+<span class="nc" id="L253">        rowLine.setForecolor(new Color(220, 220, 220));</span>
+<span class="nc" id="L254">        detailBand.addElement(rowLine);</span>
+        
+<span class="nc" id="L256">        int[] widths = {70, 100, 85, 75, 85, 100};</span>
+<span class="nc" id="L257">        int xPosition = 0;</span>
+        
+        // Fecha
+<span class="nc" id="L260">        JRDesignTextField dateField = new JRDesignTextField();</span>
+<span class="nc" id="L261">        dateField.setX(xPosition);</span>
+<span class="nc" id="L262">        dateField.setY(5);</span>
+<span class="nc" id="L263">        dateField.setWidth(widths[0]);</span>
+<span class="nc" id="L264">        dateField.setHeight(15);</span>
+<span class="nc" id="L265">        dateField.setExpression(createExpression(&quot;$F{date}&quot;));</span>
+<span class="nc" id="L266">        dateField.setFontSize(8f);</span>
+<span class="nc" id="L267">        dateField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L268">        detailBand.addElement(dateField);</span>
+<span class="nc" id="L269">        xPosition += widths[0];</span>
+        
+        // Tipo de cuenta (TRADUCIDO)
+<span class="nc" id="L272">        JRDesignTextField typeField = new JRDesignTextField();</span>
+<span class="nc" id="L273">        typeField.setX(xPosition);</span>
+<span class="nc" id="L274">        typeField.setY(5);</span>
+<span class="nc" id="L275">        typeField.setWidth(widths[1]);</span>
+<span class="nc" id="L276">        typeField.setHeight(15);</span>
+<span class="nc" id="L277">        typeField.setExpression(createExpression(&quot;$F{type}.equals(\&quot;SAVINGS\&quot;) ? \&quot;Ahorros\&quot; : $F{type}.equals(\&quot;CHECKING\&quot;) ? \&quot;Corriente\&quot; : $F{type}&quot;));</span>
+<span class="nc" id="L278">        typeField.setFontSize(8f);</span>
+<span class="nc" id="L279">        typeField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L280">        typeField.setBold(true);</span>
+<span class="nc" id="L281">        typeField.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L282">        detailBand.addElement(typeField);</span>
+<span class="nc" id="L283">        xPosition += widths[1];</span>
+        
+        // Saldo Inicial
+<span class="nc" id="L286">        JRDesignTextField initialBalanceField = new JRDesignTextField();</span>
+<span class="nc" id="L287">        initialBalanceField.setX(xPosition);</span>
+<span class="nc" id="L288">        initialBalanceField.setY(5);</span>
+<span class="nc" id="L289">        initialBalanceField.setWidth(widths[2]);</span>
+<span class="nc" id="L290">        initialBalanceField.setHeight(15);</span>
+<span class="nc" id="L291">        initialBalanceField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{initialBalance})&quot;));</span>
+<span class="nc" id="L292">        initialBalanceField.setFontSize(8f);</span>
+<span class="nc" id="L293">        initialBalanceField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L294">        detailBand.addElement(initialBalanceField);</span>
+<span class="nc" id="L295">        xPosition += widths[2];</span>
+        
+        // Movimiento (con color según signo)
+<span class="nc" id="L298">        JRDesignTextField movementField = new JRDesignTextField();</span>
+<span class="nc" id="L299">        movementField.setX(xPosition);</span>
+<span class="nc" id="L300">        movementField.setY(5);</span>
+<span class="nc" id="L301">        movementField.setWidth(widths[3]);</span>
+<span class="nc" id="L302">        movementField.setHeight(15);</span>
+<span class="nc" id="L303">        movementField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{movement})&quot;));</span>
+<span class="nc" id="L304">        movementField.setFontSize(8f);</span>
+<span class="nc" id="L305">        movementField.setBold(true);</span>
+<span class="nc" id="L306">        movementField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L307">        detailBand.addElement(movementField);</span>
+<span class="nc" id="L308">        xPosition += widths[3];</span>
+        
+        // Saldo Final
+<span class="nc" id="L311">        JRDesignTextField availableBalanceField = new JRDesignTextField();</span>
+<span class="nc" id="L312">        availableBalanceField.setX(xPosition);</span>
+<span class="nc" id="L313">        availableBalanceField.setY(5);</span>
+<span class="nc" id="L314">        availableBalanceField.setWidth(widths[4]);</span>
+<span class="nc" id="L315">        availableBalanceField.setHeight(15);</span>
+<span class="nc" id="L316">        availableBalanceField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{availableBalance})&quot;));</span>
+<span class="nc" id="L317">        availableBalanceField.setFontSize(8f);</span>
+<span class="nc" id="L318">        availableBalanceField.setBold(true);</span>
+<span class="nc" id="L319">        availableBalanceField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L320">        availableBalanceField.setForecolor(new Color(0, 100, 0));</span>
+<span class="nc" id="L321">        detailBand.addElement(availableBalanceField);</span>
+<span class="nc" id="L322">        xPosition += widths[4];</span>
+        
+        // Estado
+<span class="nc" id="L325">        JRDesignTextField statusField = new JRDesignTextField();</span>
+<span class="nc" id="L326">        statusField.setX(xPosition);</span>
+<span class="nc" id="L327">        statusField.setY(5);</span>
+<span class="nc" id="L328">        statusField.setWidth(widths[5]);</span>
+<span class="nc" id="L329">        statusField.setHeight(15);</span>
+<span class="nc" id="L330">        statusField.setExpression(createExpression(&quot;$F{status}&quot;));</span>
+<span class="nc" id="L331">        statusField.setFontSize(8f);</span>
+<span class="nc" id="L332">        statusField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L333">        detailBand.addElement(statusField);</span>
+        
+<span class="nc" id="L335">        ((JRDesignSection) jasperDesign.getDetailSection()).addBand(detailBand);</span>
+<span class="nc" id="L336">    }</span>
+    
+    private void addPageFooter(JasperDesign jasperDesign) {
+<span class="nc" id="L339">        JRDesignBand pageFooter = new JRDesignBand();</span>
+<span class="nc" id="L340">        pageFooter.setHeight(50);</span>
+        
+        // Línea superior
+<span class="nc" id="L343">        JRDesignLine topLine = new JRDesignLine();</span>
+<span class="nc" id="L344">        topLine.setX(0);</span>
+<span class="nc" id="L345">        topLine.setY(5);</span>
+<span class="nc" id="L346">        topLine.setWidth(515);</span>
+<span class="nc" id="L347">        topLine.setHeight(0);</span>
+<span class="nc" id="L348">        topLine.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L349">        pageFooter.addElement(topLine);</span>
+        
+        // Información del banco
+<span class="nc" id="L352">        JRDesignStaticText footerInfo = new JRDesignStaticText();</span>
+<span class="nc" id="L353">        footerInfo.setX(0);</span>
+<span class="nc" id="L354">        footerInfo.setY(10);</span>
+<span class="nc" id="L355">        footerInfo.setWidth(350);</span>
+<span class="nc" id="L356">        footerInfo.setHeight(15);</span>
+<span class="nc" id="L357">        footerInfo.setText(&quot;NEXUS - Servicios Financieros | www.nexusbank.com | 1-800-NEXUS&quot;);</span>
+<span class="nc" id="L358">        footerInfo.setFontSize(7f);</span>
+<span class="nc" id="L359">        footerInfo.setForecolor(new Color(100, 100, 100));</span>
+<span class="nc" id="L360">        pageFooter.addElement(footerInfo);</span>
+        
+        // Número de página
+<span class="nc" id="L363">        JRDesignTextField pageNumber = new JRDesignTextField();</span>
+<span class="nc" id="L364">        pageNumber.setX(350);</span>
+<span class="nc" id="L365">        pageNumber.setY(10);</span>
+<span class="nc" id="L366">        pageNumber.setWidth(165);</span>
+<span class="nc" id="L367">        pageNumber.setHeight(15);</span>
+<span class="nc" id="L368">        pageNumber.setExpression(createExpression(&quot;\&quot;Página \&quot; + $V{PAGE_NUMBER}&quot;));</span>
+<span class="nc" id="L369">        pageNumber.setFontSize(8f);</span>
+<span class="nc" id="L370">        pageNumber.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L371">        pageFooter.addElement(pageNumber);</span>
+        
+        // Advertencia legal
+<span class="nc" id="L374">        JRDesignStaticText legalNote = new JRDesignStaticText();</span>
+<span class="nc" id="L375">        legalNote.setX(0);</span>
+<span class="nc" id="L376">        legalNote.setY(25);</span>
+<span class="nc" id="L377">        legalNote.setWidth(515);</span>
+<span class="nc" id="L378">        legalNote.setHeight(20);</span>
+<span class="nc" id="L379">        legalNote.setText(&quot;Este documento es confidencial. Para consultas, contacte con su asesor bancario.&quot;);</span>
+<span class="nc" id="L380">        legalNote.setFontSize(7f);</span>
+<span class="nc" id="L381">        legalNote.setItalic(true);</span>
+<span class="nc" id="L382">        legalNote.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L383">        legalNote.setForecolor(new Color(150, 150, 150));</span>
+<span class="nc" id="L384">        pageFooter.addElement(legalNote);</span>
+        
+<span class="nc" id="L386">        jasperDesign.setPageFooter(pageFooter);</span>
+<span class="nc" id="L387">    }</span>
+    
+    private JRDesignExpression createExpression(String text) {
+<span class="nc" id="L390">        JRDesignExpression expression = new JRDesignExpression();</span>
+<span class="nc" id="L391">        expression.setText(text);</span>
+<span class="nc" id="L392">        return expression;</span>
+    }
+    
+    private List&lt;Map&lt;String, Object&gt;&gt; convertReportDTOToMap(List&lt;ReportDTO&gt; reportData) {
+<span class="nc" id="L396">    DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy&quot;);</span>
+
+<span class="nc" id="L398">        List&lt;Map&lt;String, Object&gt;&gt; dataList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">        for (ReportDTO report : reportData) {</span>
+<span class="nc" id="L400">            Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+            // ReportDTO.generated uses LocalDate for date. Si quieres tiempos reales, cambia el DTO a LocalDateTime/OffsetDateTime.
+<span class="nc" id="L402">            java.time.LocalDate localDate = report.getDate();</span>
+<span class="nc bnc" id="L403" title="All 2 branches missed.">            if (localDate != null) {</span>
+                // Formatear la fecha y añadir hora por defecto 00:00:00 (si no hay hora en la fuente)
+<span class="nc" id="L405">                String fecha = localDate.format(dateOnlyFormatter) + &quot; 00:00:00&quot;;</span>
+<span class="nc" id="L406">                map.put(&quot;date&quot;, fecha);</span>
+<span class="nc" id="L407">            } else {</span>
+<span class="nc" id="L408">                map.put(&quot;date&quot;, &quot;&quot;);</span>
+            }
+
+<span class="nc bnc" id="L411" title="All 2 branches missed.">            map.put(&quot;type&quot;, report.getType() != null ? report.getType() : &quot;&quot;);</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">            map.put(&quot;initialBalance&quot;, report.getInitialBalance() != null ? report.getInitialBalance() : Double.valueOf(0.0));</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">            map.put(&quot;movement&quot;, report.getMovement() != null ? report.getMovement() : Double.valueOf(0.0));</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">            map.put(&quot;availableBalance&quot;, report.getAvailableBalance() != null ? report.getAvailableBalance() : Double.valueOf(0.0));</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">            map.put(&quot;status&quot;, Boolean.TRUE.equals(report.getStatus()) ? &quot;Activo&quot; : &quot;Inactivo&quot;);</span>
+<span class="nc" id="L416">            dataList.add(map);</span>
+<span class="nc" id="L417">        }</span>
+<span class="nc" id="L418">        return dataList;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
