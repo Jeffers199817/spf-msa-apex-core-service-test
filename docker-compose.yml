@@ -30,3 +30,4 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       timeout: 10s
       retries: 10
+
