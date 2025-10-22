@@ -3,8 +3,9 @@
 # 📋 DOCUMENTO COMPLETO DEL PROYECTO - SPF MSA APEX CORE SERVICE
 
 **Fecha:** 19 de Octubre, 2025  
-**Versión:** 1.0  
-**Proyecto:** Microservicio Bancario - Gestión de Clientes, Cuentas y Transacciones
+**Versión:** 2.0 ⭐ **ACTUALIZADO**  
+**Proyecto:** Microservicio Bancario - Gestión de Clientes, Cuentas y Transacciones  
+**Estado:** ✅ **DESPLEGADO EN PRODUCCIÓN**
 
 ---
 
@@ -23,54 +24,141 @@ Este microservicio backend se integra con el portal web bancario que proporciona
 
 Este proyecto incluye los siguientes recursos listos para usar:
 
-- ✅ **BaseDatos.sql** - Script completo para crear la estructura de la base de datos con tablas, relaciones y datos de prueba
-- ✅ **postman_collection.json** - Colección completa de Postman con todos los endpoints documentados y casos de prueba
-- ✅ **Dockerfile** - Configuración para construir y ejecutar el servicio en contenedor Docker
+- ✅ **BaseDatos.sql** - Script SQL completo con 16+ clientes, 20+ cuentas y 100+ transacciones de prueba
+- ✅ **postman_collection.json** - Colección Postman para desarrollo local (localhost:9090)
+- ✅ **postman_prod_collection.json** ⭐ **NUEVO** - Colección Postman para producción (VPS)
+- ✅ **Dockerfile** - Configuración Docker con Java 21 y fuentes para PDFs
+- ✅ **docker-compose.yml** ⭐ **NUEVO** - Orquestación completa Backend + PostgreSQL
+- ✅ **back.png** - Diagrama de arquitectura del backend
+- ✅ **Ejercicio Software Engineer (2).pdf** - Documento de especificación del proyecto
 
-### 🐳 Levantar con Docker
+### 🐳 Despliegue con Docker
 
-Para construir y ejecutar el servicio en Docker:
+#### **Paso 0: Clonar el Repositorio**
+
+Primero, clona el repositorio desde GitHub:
 
 ```bash
-# Construir la imagen Docker
+# Clonar el repositorio
+git clone https://github.com/Jeffers199817/spf-msa-apex-core-service.git
+
+# Entrar al directorio del proyecto
+cd spf-msa-apex-core-service
+```
+
+#### **Opción 1: Docker Simple (Solo Backend)**
+
+Antes de construir la imagen Docker, debes compilar el proyecto:
+
+```bash
+# 1. Construir el proyecto con Gradle (genera el JAR)
+gradlew build
+
+# 2. Construir la imagen Docker
 docker build -t apex-core-service.jar .
 
-# Ejecutar el contenedor
+# 3. Ejecutar el contenedor
 docker run -p 9090:9090 apex-core-service.jar
 ```
 
-El servicio estará disponible en: `http://localhost:9090`
+**Nota:** El comando `gradlew build` genera el archivo JAR en `build/libs/` que es necesario para el Docker.
+
+#### **Opción 2: Docker Compose (Backend + PostgreSQL) - ⭐ RECOMENDADO**
+
+El proyecto incluye configuración completa con **docker-compose.yml** que levanta:
+- ✅ Servicio backend en Java (Spring Boot)
+- ✅ Base de datos PostgreSQL 13
+- ✅ Inicialización automática con BaseDatos.sql
+- ✅ Health checks y restart automático
+
+```bash
+# 1. Construir el proyecto con Gradle (IMPORTANTE)
+gradlew build
+
+# 2. Levantar todos los servicios con Docker Compose
+docker-compose up -d
+
+# Ver logs en tiempo real
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+
+# Reconstruir todo (si hay cambios en el código)
+gradlew build
+docker-compose up --build -d
+```
+
+**⚠️ Importante:** Siempre ejecuta `gradlew build` antes de `docker-compose up` para asegurar que el JAR esté actualizado.
+
+**Servicios disponibles:**
+- Backend: `http://localhost:9090/spf-msa-apex-core-service`
+- PostgreSQL: `localhost:5433` (puerto externo)
+- Base de datos: `bdd_apex_core_banco`
+- Usuario: `postgres` / Contraseña: `admin123`
 
 ### 💾 Base de Datos
 
 El script **BaseDatos.sql** contiene:
-- Definición completa del esquema de base de datos
-- Tablas: PERSON, CLIENT, ACCOUNT, TRANSACTION
-- Relaciones y constraints de integridad referencial
-- Datos iniciales de prueba para comenzar rápidamente
+- ✅ **Estructura completa**: Tablas CLIENT, ACCOUNT, TRANSACTION con todas sus relaciones
+- ✅ **Constraints**: Foreign Keys y UNIQUE constraints para integridad referencial
+- ✅ **Datos de prueba**: 16+ clientes, 20+ cuentas bancarias, 100+ transacciones
+- ✅ **Compatibilidad**: PostgreSQL con tipos BIGSERIAL, TIMESTAMP, DOUBLE PRECISION
+- ✅ **Auto-inicialización**: Se ejecuta automáticamente con Docker Compose
 
-### 📮 Colección de Postman
+**Esquema de Base de Datos:**
 
-El archivo **postman_collection.json** incluye:
-- Todos los endpoints REST del microservicio
-- Ejemplos de requests y responses
-- Variables de entorno configurables
-- Casos de prueba para validación
+```sql
+CLIENT (client_id, name, gender, age, identification, address, phone, password, status)
+    ↓ 1:N
+ACCOUNT (account_id, account_number, account_type, initial_balance, status, client_id)
+    ↓ 1:N
+TRANSACTION (transaction_id, date, transaction_type, amount, balance, account_id)
+```
+
+### 📮 Colecciones de Postman
+
+El proyecto incluye **DOS colecciones** de Postman:
+
+#### **1. postman_collection.json** - Ambiente Local
+- 🏠 **URL Base**: `http://localhost:9090/spf-msa-apex-core-service`
+- 📝 Todos los endpoints REST del microservicio
+- ✅ Ejemplos de requests y responses
+- 🧪 Casos de prueba para desarrollo local
+
+#### **2. postman_prod_collection.json** - Ambiente Producción ⭐ NUEVO
+- 🌐 **URL Base**: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service`
+- 🚀 Configurado para servidor de producción
+- 🔧 Variable de entorno `base_url` configurable
+- ✅ Todos los endpoints listos para pruebas en producción
+
+**Endpoints incluidos en ambas colecciones:**
+- ✅ **Clients**: GET, POST, PUT, DELETE
+- ✅ **Accounts**: GET, POST, PUT, DELETE
+- ✅ **Transactions**: GET, POST, PUT, DELETE (DEPOSIT y WITHDRAWAL)
+- ✅ **Reports**: Generación de estados de cuenta (JSON y PDF Base64)
 
 ---
 
 ## 🎯 ÍNDICE
 
-1. [Product Backlog](#-product-backlog)
-2. [Épicas](#-épicas)
-3. [Historias de Usuario](#-historias-de-usuario)
-4. [Tareas Técnicas](#-tareas-técnicas)
-5. [Endpoints API](#-endpoints-api)
-6. [Arquitectura del Sistema](#-arquitectura-del-sistema)
-7. [Patrones de Diseño](#-patrones-de-diseño)
-8. [Flujo Kanban](#-flujo-kanban)
-9. [Pruebas de Aceptación](#-pruebas-de-aceptación)
-10. [Configuración del Proyecto](#-configuración-del-proyecto)
+1. [Inicio Rápido](#-inicio-rápido) ⭐ **NUEVO**
+   - [Recursos Incluidos](#-recursos-incluidos)
+   - [Despliegue con Docker](#-despliegue-con-docker)
+   - [Base de Datos PostgreSQL](#-base-de-datos)
+   - [Colecciones de Postman](#-colecciones-de-postman)
+2. [Product Backlog](#-product-backlog)
+3. [Épicas](#-épicas)
+4. [Historias de Usuario](#-historias-de-usuario)
+5. [Tareas Técnicas](#-tareas-técnicas)
+6. [Endpoints API](#-endpoints-api) ⭐ **Actualizado con URLs de Producción**
+7. [Arquitectura del Sistema](#-arquitectura-del-sistema)
+8. [Patrones de Diseño](#-patrones-de-diseño)
+9. [Flujo Kanban](#-flujo-kanban)
+10. [Pruebas de Aceptación](#-pruebas-de-aceptación)
+11. [Configuración del Proyecto](#-configuración-del-proyecto) ⭐ **Actualizado con Docker**
+12. [Despliegue en Producción](#-despliegue-en-producción) ⭐ **NUEVO**
+13. [Conclusión](#-conclusión)
 
 ---
 
@@ -440,6 +528,24 @@ T012: Datos de Prueba
 ---
 
 ## 🌐 ENDPOINTS API
+
+### **URLs de Acceso**
+
+#### **🏠 Ambiente Local (Desarrollo)**
+```
+Base URL: http://localhost:9090/spf-msa-apex-core-service
+```
+
+#### **🚀 Ambiente de Producción**
+```
+Base URL: http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service
+```
+
+**Ejemplos de Endpoints en Producción:**
+- 👥 Clientes: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/clients`
+- 🏦 Cuentas: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/accounts`
+- 💰 Transacciones: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/transactions`
+- 📊 Reportes: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/reports`
 
 ### **Cliente Endpoints**
 
@@ -1222,26 +1328,122 @@ dependencies {
 
 ### **Configuración de Ambientes**
 
-#### **application.yml (Base)**
+#### **application.yml (Configuración Principal)**
 ```yaml
 spring:
   application:
     name: spf-msa-apex-core-service
-  profiles:
-    active: dev
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/bdd_apex_core_banco}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER_NAME:postgres}
+    password: ${DB_PASSWORD:admin123}
+
   jpa:
-    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
 
+server:
+  port: 9090
+  servlet:
+    context-path: /spf-msa-apex-core-service
+
+# Configuración de Actuator para monitoreo
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
 logging:
   level:
-    com.pichincha.spfmsaapexcoreservice: INFO
-    org.hibernate.SQL: DEBUG
+    "[com.pichincha]": INFO
+    "[org.springframework]": WARN
+    "[org.hibernate]": WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  file:
+    name: /app/logs/application.log
 ```
+
+#### **docker-compose.yml** ⭐ NUEVO
+```yaml
+version: '3'
+
+services:
+  app_apex_core:
+    build: .
+    mem_limit: 512m
+    ports:
+      - "9090:9090"
+    environment:
+      DB_URL: jdbc:postgresql://db_apex_core:5432/bdd_apex_core_banco?createDatabaseIfNotExist=true&serverTimezone=UTC
+      DB_USER_NAME: postgres
+      DB_PASSWORD: admin123
+    restart: always
+    depends_on:
+      db_apex_core:
+        condition: service_healthy
+
+  db_apex_core:
+    image: postgres:13
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_USER: postgres
+      POSTGRES_DB: bdd_apex_core_banco
+    volumes:
+      - ./BaseDatos.sql:/docker-entrypoint-initdb.d/BaseDatos.sql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      timeout: 10s
+      retries: 10
+```
+
+**Características de Docker Compose:**
+- ✅ **Servicio Backend**: Spring Boot en Java 21 con límite de memoria 512MB
+- ✅ **Base de Datos**: PostgreSQL 13 con inicialización automática
+- ✅ **Health Checks**: Verificación automática de estado de servicios
+- ✅ **Restart Policy**: Reinicio automático en caso de fallo
+- ✅ **Volumes**: Persistencia de datos y carga de scripts SQL
+- ✅ **Network**: Comunicación interna entre contenedores
+
+#### **Dockerfile** ⭐ NUEVO
+```dockerfile
+FROM openjdk:21-jdk-slim
+
+# Instalar fuentes necesarias para JasperReports en modo headless
+RUN apt-get update && apt-get install -y \
+    fontconfig \
+    libfreetype6 \
+    fonts-dejavu-core \
+    fonts-dejavu-extra \
+    && rm -rf /var/lib/apt/lists/*
+
+VOLUME /tmp
+ADD build/libs/spf-msa-apex-core-service-0.0.1.jar apex-core-service.jar
+EXPOSE 9090
+RUN bash -c 'touch /apex-core-service.jar'
+ENTRYPOINT ["java","-Djava.awt.headless=true","-jar","apex-core-service.jar"]
+```
+
+**Características del Dockerfile:**
+- ✅ **Java 21**: OpenJDK 21 slim para menor tamaño de imagen
+- ✅ **Fuentes incluidas**: Soporte para generación de PDFs con JasperReports
+- ✅ **Modo Headless**: Optimizado para ejecución sin interfaz gráfica
+- ✅ **Puerto**: Expone puerto 9090 para el servicio
 
 #### **application-dev.yml**
 ```yaml
@@ -1424,6 +1626,130 @@ Clean Code:
 
 ---
 
+## 🚀 DESPLIEGUE EN PRODUCCIÓN
+
+### **Información del Servidor**
+
+**🌐 Servidor VPS:**
+- **URL Base**: `http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service`
+- **Puerto**: 9090
+- **Proveedor**: Dattaweb VPS
+- **Estado**: ✅ Activo y en funcionamiento
+
+### **Endpoints en Producción**
+
+Todos los endpoints están disponibles en producción con la siguiente estructura:
+
+```
+http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/{resource}
+```
+
+**Ejemplos prácticos:**
+
+#### 🏠 **Clientes**
+```bash
+# Listar todos los clientes
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/clients
+
+# Obtener cliente por ID
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/clients/1
+
+# Crear cliente
+POST http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/clients
+```
+
+#### 💳 **Cuentas**
+```bash
+# Listar todas las cuentas
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/accounts
+
+# Crear cuenta
+POST http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/accounts
+```
+
+#### 💰 **Transacciones**
+```bash
+# Listar transacciones
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/transactions
+
+# Crear depósito
+POST http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/transactions
+
+# Crear retiro
+POST http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/transactions
+```
+
+#### 📊 **Reportes**
+```bash
+# Generar estado de cuenta (JSON)
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/reports?clientId=1&startDate=2025-10-01&endDate=2025-10-31
+
+# Generar estado de cuenta con PDF
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/reports/pdf?clientId=1&startDate=2025-10-01&endDate=2025-10-31
+```
+
+### **Monitoreo y Salud del Servicio**
+
+El servicio incluye endpoints de **Spring Boot Actuator** para monitoreo:
+
+```bash
+# Health Check
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/actuator/health
+
+# Información del servicio
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/actuator/info
+
+# Métricas
+GET http://vps-5405471-x.dattaweb.com:9090/spf-msa-apex-core-service/actuator/metrics
+```
+
+### **Colección Postman de Producción**
+
+Para facilitar las pruebas en producción, utiliza el archivo:
+- 📦 **postman_prod_collection.json**
+- 🔧 Variable `base_url` pre-configurada
+- ✅ Todos los endpoints listos para usar
+- 🧪 Casos de prueba incluidos
+
+### **Stack Tecnológico en Producción**
+
+```yaml
+Backend:
+  - Java 21 (OpenJDK)
+  - Spring Boot 3.x
+  - Maven/Gradle
+
+Base de Datos:
+  - PostgreSQL 13
+  - Puerto: 5432 (interno Docker)
+  - Base de datos: bdd_apex_core_banco
+
+Infraestructura:
+  - Docker & Docker Compose
+  - VPS Dattaweb
+  - Sistema Operativo: Linux
+
+Servicios:
+  - Backend API: Puerto 9090
+  - PostgreSQL: Puerto 5433 (externo)
+  - Health Checks activos
+  - Auto-restart habilitado
+```
+
+### **Conexión a Base de Datos en Producción**
+
+```yaml
+Host: vps-5405471-x.dattaweb.com
+Puerto: 5433
+Base de datos: bdd_apex_core_banco
+Usuario: postgres
+Contraseña: [Configurada en variables de entorno]
+```
+
+**Nota de Seguridad**: Las credenciales de producción están configuradas mediante variables de entorno en el servidor.
+
+---
+
 ## 🎯 CONCLUSIÓN
 
 Este documento representa la **documentación completa** del proyecto SPF MSA Apex Core Service, incluyendo:
@@ -1436,6 +1762,10 @@ Este documento representa la **documentación completa** del proyecto SPF MSA Ap
 ✅ **Flujo Kanban** con 9 estados y WIP limits  
 ✅ **Pruebas de aceptación** detalladas con Gherkin  
 ✅ **Configuración multi-ambiente** lista para producción  
+✅ **Docker & Docker Compose** ⭐ NUEVO - Orquestación completa  
+✅ **Despliegue en producción** ⭐ NUEVO - VPS activo y funcional  
+✅ **Colecciones Postman** ⭐ NUEVO - Local y Producción  
+✅ **Base de datos PostgreSQL** ⭐ NUEVO - Con 100+ registros de prueba  
 
 **Estado Final: 90% completado**, listo para entrevista técnica y producción.
 

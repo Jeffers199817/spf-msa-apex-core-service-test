@@ -23,7 +23,7 @@ import jakarta.annotation.Generated;
  * ReportResponseDTO
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-10-20T02:43:05.386267500-05:00[America/Bogota]", comments = "Generator version: 7.15.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-10-21T22:09:14.182490100-05:00[America/Bogota]", comments = "Generator version: 7.15.0")
 public class ReportResponseDTO {
 
   @Valid

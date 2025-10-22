@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PdfReportServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.service.impl</a> &gt; <span class="el_source">PdfReportServiceImpl.java</span></div><h1>PdfReportServiceImpl.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.service.impl;
+
+import com.pichincha.spfmsaapexcoreservice.model.ReportDTO;
+import com.pichincha.spfmsaapexcoreservice.service.PdfReportService;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
+import org.springframework.stereotype.Service;
+
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+<span class="fc" id="L17">@Slf4j</span>
+@Service
+<span class="fc" id="L19">public class PdfReportServiceImpl implements PdfReportService {</span>
+
+    @Override
+    public byte[] generateAccountStatementPdf(List&lt;ReportDTO&gt; reportData) {
+        try {
+            // Agrupar datos por cuenta
+<span class="nc" id="L25">            Map&lt;String, List&lt;ReportDTO&gt;&gt; groupedByAccount = groupByAccount(reportData);</span>
+            
+<span class="nc" id="L27">            JasperDesign jasperDesign = createReportDesign();</span>
+<span class="nc" id="L28">            JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);</span>
+            
+            // Preparar parámetros
+<span class="nc" id="L31">            Map&lt;String, Object&gt; parameters = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L32">            parameters.put(&quot;ReportTitle&quot;, &quot;ESTADO DE CUENTA BANCARIO&quot;);</span>
+            
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (!reportData.isEmpty()) {</span>
+<span class="nc" id="L35">                parameters.put(&quot;ClientName&quot;, reportData.get(0).getClient());</span>
+                
+                // Calcular totales generales
+<span class="nc" id="L38">                double totalInitialBalance = groupedByAccount.values().stream()</span>
+<span class="nc" id="L39">                    .mapToDouble(list -&gt; {</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                        if (list.isEmpty()) return 0.0;</span>
+<span class="nc" id="L41">                        Double v = list.get(0).getInitialBalance();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">                        return v != null ? v : 0.0;</span>
+                    })
+<span class="nc" id="L44">                    .sum();</span>
+                
+<span class="nc" id="L46">                double totalDeposits = reportData.stream()</span>
+<span class="nc" id="L47">                    .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L48">                        Double mv = r.getMovement();</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">                        return (mv != null &amp;&amp; mv.doubleValue() &gt; 0.0) ? mv.doubleValue() : 0.0;</span>
+                    })
+<span class="nc" id="L51">                    .sum();</span>
+
+<span class="nc" id="L53">                double totalWithdrawals = Math.abs(reportData.stream()</span>
+<span class="nc" id="L54">                    .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L55">                        Double mv = r.getMovement();</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">                        return (mv != null &amp;&amp; mv.doubleValue() &lt; 0.0) ? mv.doubleValue() : 0.0;</span>
+                    })
+<span class="nc" id="L58">                    .sum());</span>
+
+<span class="nc" id="L60">                double totalFinalBalance = reportData.stream()</span>
+<span class="nc" id="L61">                    .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L62">                        Double av = r.getAvailableBalance();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                        return av != null ? av.doubleValue() : 0.0;</span>
+                    })
+<span class="nc" id="L65">                    .max()</span>
+<span class="nc" id="L66">                    .orElse(0.0);</span>
+                
+<span class="nc" id="L68">                parameters.put(&quot;TotalAccounts&quot;, groupedByAccount.size());</span>
+<span class="nc" id="L69">                parameters.put(&quot;TotalInitialBalance&quot;, totalInitialBalance);</span>
+<span class="nc" id="L70">                parameters.put(&quot;TotalDeposits&quot;, totalDeposits);</span>
+<span class="nc" id="L71">                parameters.put(&quot;TotalWithdrawals&quot;, totalWithdrawals);</span>
+<span class="nc" id="L72">                parameters.put(&quot;TotalFinalBalance&quot;, totalFinalBalance);</span>
+            }
+            
+            // Crear datasource con datos agrupados y convertidos
+<span class="nc" id="L76">            List&lt;Map&lt;String, Object&gt;&gt; convertedData = convertGroupedDataToMap(groupedByAccount);</span>
+<span class="nc" id="L77">            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(convertedData);</span>
+            
+<span class="nc" id="L79">            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);</span>
+<span class="nc" id="L80">            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();</span>
+<span class="nc" id="L81">            JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);</span>
+            
+<span class="nc" id="L83">            return outputStream.toByteArray();</span>
+            
+<span class="nc" id="L85">        } catch (JRException exception) {</span>
+<span class="nc" id="L86">            throw new RuntimeException(&quot;Error generating PDF report: &quot; + exception.getMessage(), exception);</span>
+        }
+    }
+    
+    private Map&lt;String, List&lt;ReportDTO&gt;&gt; groupByAccount(List&lt;ReportDTO&gt; reportData) {
+<span class="nc" id="L91">        Map&lt;String, List&lt;ReportDTO&gt;&gt; grouped = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (ReportDTO report : reportData) {</span>
+<span class="nc" id="L93">            String accountKey = report.getAccountNumber() + &quot;-&quot; + report.getType();</span>
+<span class="nc" id="L94">            grouped.computeIfAbsent(accountKey, k -&gt; new ArrayList&lt;&gt;()).add(report);</span>
+<span class="nc" id="L95">        }</span>
+<span class="nc" id="L96">        return grouped;</span>
+    }
+    
+    private JasperDesign createReportDesign() throws JRException {
+<span class="nc" id="L100">        JasperDesign jasperDesign = new JasperDesign();</span>
+<span class="nc" id="L101">        jasperDesign.setName(&quot;AccountStatement&quot;);</span>
+<span class="nc" id="L102">        jasperDesign.setPageWidth(595);</span>
+<span class="nc" id="L103">        jasperDesign.setPageHeight(842);</span>
+<span class="nc" id="L104">        jasperDesign.setColumnWidth(515);</span>
+<span class="nc" id="L105">        jasperDesign.setColumnSpacing(0);</span>
+<span class="nc" id="L106">        jasperDesign.setLeftMargin(40);</span>
+<span class="nc" id="L107">        jasperDesign.setRightMargin(40);</span>
+<span class="nc" id="L108">        jasperDesign.setTopMargin(50);</span>
+<span class="nc" id="L109">        jasperDesign.setBottomMargin(50);</span>
+        
+<span class="nc" id="L111">        addParameters(jasperDesign);</span>
+<span class="nc" id="L112">        addFields(jasperDesign);</span>
+<span class="nc" id="L113">        addTitleBand(jasperDesign);</span>
+<span class="nc" id="L114">        addColumnHeaderBand(jasperDesign);</span>
+<span class="nc" id="L115">        addDetailBand(jasperDesign);</span>
+<span class="nc" id="L116">        addPageFooter(jasperDesign);</span>
+        
+<span class="nc" id="L118">        return jasperDesign;</span>
+    }
+    
+    private void addParameters(JasperDesign jasperDesign) throws JRException {
+<span class="nc" id="L122">        JRDesignParameter parameterTitle = new JRDesignParameter();</span>
+<span class="nc" id="L123">        parameterTitle.setName(&quot;ReportTitle&quot;);</span>
+<span class="nc" id="L124">        parameterTitle.setValueClass(String.class);</span>
+<span class="nc" id="L125">        jasperDesign.addParameter(parameterTitle);</span>
+        
+<span class="nc" id="L127">        JRDesignParameter parameterClientName = new JRDesignParameter();</span>
+<span class="nc" id="L128">        parameterClientName.setName(&quot;ClientName&quot;);</span>
+<span class="nc" id="L129">        parameterClientName.setValueClass(String.class);</span>
+<span class="nc" id="L130">        jasperDesign.addParameter(parameterClientName);</span>
+        
+        // Parámetros para resumen general
+<span class="nc" id="L133">        addParameter(jasperDesign, &quot;TotalAccounts&quot;, Integer.class);</span>
+<span class="nc" id="L134">        addParameter(jasperDesign, &quot;TotalInitialBalance&quot;, Double.class);</span>
+<span class="nc" id="L135">        addParameter(jasperDesign, &quot;TotalDeposits&quot;, Double.class);</span>
+<span class="nc" id="L136">        addParameter(jasperDesign, &quot;TotalWithdrawals&quot;, Double.class);</span>
+<span class="nc" id="L137">        addParameter(jasperDesign, &quot;TotalFinalBalance&quot;, Double.class);</span>
+<span class="nc" id="L138">    }</span>
+    
+    private void addParameter(JasperDesign jasperDesign, String name, Class&lt;?&gt; valueClass) throws JRException {
+<span class="nc" id="L141">        JRDesignParameter parameter = new JRDesignParameter();</span>
+<span class="nc" id="L142">        parameter.setName(name);</span>
+<span class="nc" id="L143">        parameter.setValueClass(valueClass);</span>
+<span class="nc" id="L144">        jasperDesign.addParameter(parameter);</span>
+<span class="nc" id="L145">    }</span>
+    
+    private void addFields(JasperDesign jasperDesign) throws JRException {
+        // Campos para encabezados de cuenta
+<span class="nc" id="L149">        addField(jasperDesign, &quot;isAccountHeader&quot;, Boolean.class);</span>
+<span class="nc" id="L150">        addField(jasperDesign, &quot;accountNumber&quot;, String.class);</span>
+<span class="nc" id="L151">        addField(jasperDesign, &quot;accountType&quot;, String.class);</span>
+<span class="nc" id="L152">        addField(jasperDesign, &quot;client&quot;, String.class);</span>
+<span class="nc" id="L153">        addField(jasperDesign, &quot;accountInitialBalance&quot;, Double.class);</span>
+<span class="nc" id="L154">        addField(jasperDesign, &quot;accountDeposits&quot;, Double.class);</span>
+<span class="nc" id="L155">        addField(jasperDesign, &quot;accountWithdrawals&quot;, Double.class);</span>
+<span class="nc" id="L156">        addField(jasperDesign, &quot;accountFinalBalance&quot;, Double.class);</span>
+        
+        // Campos para movimientos
+<span class="nc" id="L159">        addField(jasperDesign, &quot;date&quot;, String.class);</span>
+<span class="nc" id="L160">        addField(jasperDesign, &quot;type&quot;, String.class);</span>
+<span class="nc" id="L161">        addField(jasperDesign, &quot;initialBalance&quot;, Double.class);</span>
+<span class="nc" id="L162">        addField(jasperDesign, &quot;status&quot;, String.class);</span>
+<span class="nc" id="L163">        addField(jasperDesign, &quot;movementType&quot;, String.class); // NUEVA COLUMNA</span>
+<span class="nc" id="L164">        addField(jasperDesign, &quot;movement&quot;, Double.class);</span>
+<span class="nc" id="L165">        addField(jasperDesign, &quot;availableBalance&quot;, Double.class);</span>
+<span class="nc" id="L166">    }</span>
+    
+    private void addField(JasperDesign jasperDesign, String fieldName, Class&lt;?&gt; fieldClass) throws JRException {
+<span class="nc" id="L169">        JRDesignField field = new JRDesignField();</span>
+<span class="nc" id="L170">        field.setName(fieldName);</span>
+<span class="nc" id="L171">        field.setValueClass(fieldClass);</span>
+<span class="nc" id="L172">        jasperDesign.addField(field);</span>
+<span class="nc" id="L173">    }</span>
+    
+    private void addTitleBand(JasperDesign jasperDesign) {
+<span class="nc" id="L176">        JRDesignBand titleBand = new JRDesignBand();</span>
+<span class="nc" id="L177">        titleBand.setHeight(260); // Aumentado para incluir resumen</span>
+        
+        // Logo y nombre del banco NEXUS
+<span class="nc" id="L180">        JRDesignStaticText bankName = new JRDesignStaticText();</span>
+<span class="nc" id="L181">        bankName.setX(0);</span>
+<span class="nc" id="L182">        bankName.setY(5);</span>
+<span class="nc" id="L183">        bankName.setWidth(515);</span>
+<span class="nc" id="L184">        bankName.setHeight(35);</span>
+<span class="nc" id="L185">        bankName.setText(&quot;BANCO NEXUS&quot;);</span>
+<span class="nc" id="L186">        bankName.setFontSize(28f);</span>
+<span class="nc" id="L187">        bankName.setBold(true);</span>
+<span class="nc" id="L188">        bankName.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L189">        bankName.setForecolor(new Color(0, 51, 102)); // Azul corporativo</span>
+<span class="nc" id="L190">        titleBand.addElement(bankName);</span>
+        
+        // Subtítulo del banco
+<span class="nc" id="L193">        JRDesignStaticText bankSlogan = new JRDesignStaticText();</span>
+<span class="nc" id="L194">        bankSlogan.setX(0);</span>
+<span class="nc" id="L195">        bankSlogan.setY(38);</span>
+<span class="nc" id="L196">        bankSlogan.setWidth(515);</span>
+<span class="nc" id="L197">        bankSlogan.setHeight(12);</span>
+<span class="nc" id="L198">        bankSlogan.setText(&quot;Institución Financiera de Primera Categoría | Superintendencia de Bancos&quot;);</span>
+<span class="nc" id="L199">        bankSlogan.setFontSize(8f);</span>
+<span class="nc" id="L200">        bankSlogan.setItalic(true);</span>
+<span class="nc" id="L201">        bankSlogan.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L202">        bankSlogan.setForecolor(new Color(100, 100, 100));</span>
+<span class="nc" id="L203">        titleBand.addElement(bankSlogan);</span>
+        
+        // Línea separadora
+<span class="nc" id="L206">        JRDesignLine line1 = new JRDesignLine();</span>
+<span class="nc" id="L207">        line1.setX(0);</span>
+<span class="nc" id="L208">        line1.setY(55);</span>
+<span class="nc" id="L209">        line1.setWidth(515);</span>
+<span class="nc" id="L210">        line1.setHeight(0);</span>
+<span class="nc" id="L211">        line1.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L212">        titleBand.addElement(line1);</span>
+        
+        // Título del documento
+<span class="nc" id="L215">        JRDesignStaticText titleText = new JRDesignStaticText();</span>
+<span class="nc" id="L216">        titleText.setX(0);</span>
+<span class="nc" id="L217">        titleText.setY(62);</span>
+<span class="nc" id="L218">        titleText.setWidth(515);</span>
+<span class="nc" id="L219">        titleText.setHeight(20);</span>
+<span class="nc" id="L220">        titleText.setText(&quot;ESTADO DE CUENTA BANCARIO&quot;);</span>
+<span class="nc" id="L221">        titleText.setFontSize(14f);</span>
+<span class="nc" id="L222">        titleText.setBold(true);</span>
+<span class="nc" id="L223">        titleText.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L224">        titleBand.addElement(titleText);</span>
+        
+        // Información del cliente
+<span class="nc" id="L227">        JRDesignRectangle clientBox = new JRDesignRectangle();</span>
+<span class="nc" id="L228">        clientBox.setX(0);</span>
+<span class="nc" id="L229">        clientBox.setY(87);</span>
+<span class="nc" id="L230">        clientBox.setWidth(515);</span>
+<span class="nc" id="L231">        clientBox.setHeight(30);</span>
+<span class="nc" id="L232">        clientBox.setBackcolor(new Color(240, 248, 255));</span>
+<span class="nc" id="L233">        clientBox.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L234">        titleBand.addElement(clientBox);</span>
+        
+<span class="nc" id="L236">        JRDesignTextField clientField = new JRDesignTextField();</span>
+<span class="nc" id="L237">        clientField.setX(10);</span>
+<span class="nc" id="L238">        clientField.setY(92);</span>
+<span class="nc" id="L239">        clientField.setWidth(300);</span>
+<span class="nc" id="L240">        clientField.setHeight(12);</span>
+<span class="nc" id="L241">        clientField.setExpression(createExpression(&quot;\&quot;Cliente: \&quot; + $P{ClientName}&quot;));</span>
+<span class="nc" id="L242">        clientField.setFontSize(10f);</span>
+<span class="nc" id="L243">        clientField.setBold(true);</span>
+<span class="nc" id="L244">        titleBand.addElement(clientField);</span>
+        
+        // Fecha de generación
+<span class="nc" id="L247">        JRDesignTextField dateField = new JRDesignTextField();</span>
+<span class="nc" id="L248">        dateField.setX(320);</span>
+<span class="nc" id="L249">        dateField.setY(92);</span>
+<span class="nc" id="L250">        dateField.setWidth(190);</span>
+<span class="nc" id="L251">        dateField.setHeight(12);</span>
+<span class="nc" id="L252">        dateField.setExpression(createExpression(&quot;\&quot;Fecha: \&quot; + new java.text.SimpleDateFormat(\&quot;dd/MM/yyyy HH:mm:ss\&quot;).format(new java.util.Date())&quot;));</span>
+<span class="nc" id="L253">        dateField.setFontSize(9f);</span>
+<span class="nc" id="L254">        dateField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L255">        titleBand.addElement(dateField);</span>
+        
+<span class="nc" id="L257">        JRDesignTextField accountCountField = new JRDesignTextField();</span>
+<span class="nc" id="L258">        accountCountField.setX(10);</span>
+<span class="nc" id="L259">        accountCountField.setY(104);</span>
+<span class="nc" id="L260">        accountCountField.setWidth(300);</span>
+<span class="nc" id="L261">        accountCountField.setHeight(12);</span>
+<span class="nc" id="L262">        accountCountField.setExpression(createExpression(&quot;\&quot;Total de Cuentas: \&quot; + $P{TotalAccounts}&quot;));</span>
+<span class="nc" id="L263">        accountCountField.setFontSize(9f);</span>
+<span class="nc" id="L264">        titleBand.addElement(accountCountField);</span>
+        
+        // RESUMEN GENERAL DE TODAS LAS CUENTAS
+<span class="nc" id="L267">        JRDesignStaticText summaryTitle = new JRDesignStaticText();</span>
+<span class="nc" id="L268">        summaryTitle.setX(0);</span>
+<span class="nc" id="L269">        summaryTitle.setY(125);</span>
+<span class="nc" id="L270">        summaryTitle.setWidth(515);</span>
+<span class="nc" id="L271">        summaryTitle.setHeight(15);</span>
+<span class="nc" id="L272">        summaryTitle.setText(&quot;📊 RESUMEN GENERAL DE TODAS LAS CUENTAS&quot;);</span>
+<span class="nc" id="L273">        summaryTitle.setFontSize(11f);</span>
+<span class="nc" id="L274">        summaryTitle.setBold(true);</span>
+<span class="nc" id="L275">        summaryTitle.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L276">        summaryTitle.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L277">        titleBand.addElement(summaryTitle);</span>
+        
+        // Fondo del resumen
+<span class="nc" id="L280">        JRDesignRectangle summaryBox = new JRDesignRectangle();</span>
+<span class="nc" id="L281">        summaryBox.setX(0);</span>
+<span class="nc" id="L282">        summaryBox.setY(143);</span>
+<span class="nc" id="L283">        summaryBox.setWidth(515);</span>
+<span class="nc" id="L284">        summaryBox.setHeight(110);</span>
+<span class="nc" id="L285">        summaryBox.setBackcolor(new Color(245, 250, 255));</span>
+<span class="nc" id="L286">        summaryBox.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L287">        titleBand.addElement(summaryBox);</span>
+        
+        // Primera fila de resumen
+<span class="nc" id="L290">        int yPos = 150;</span>
+<span class="nc" id="L291">        addSummaryField(titleBand, &quot;Saldo Inicial Total:&quot;, &quot;$P{TotalInitialBalance}&quot;, 10, yPos, 150, new Color(0, 51, 102));</span>
+<span class="nc" id="L292">        addSummaryField(titleBand, &quot;Total Depósitos:&quot;, &quot;$P{TotalDeposits}&quot;, 180, yPos, 150, new Color(0, 128, 0));</span>
+<span class="nc" id="L293">        addSummaryField(titleBand, &quot;Total Retiros:&quot;, &quot;$P{TotalWithdrawals}&quot;, 350, yPos, 150, new Color(200, 0, 0));</span>
+        
+        // Segunda fila
+<span class="nc" id="L296">        yPos += 25;</span>
+<span class="nc" id="L297">        addSummaryField(titleBand, &quot;Saldo Final Total:&quot;, &quot;$P{TotalFinalBalance}&quot;, 10, yPos, 150, new Color(0, 51, 102));</span>
+        
+        // Nota informativa
+<span class="nc" id="L300">        JRDesignStaticText noteText = new JRDesignStaticText();</span>
+<span class="nc" id="L301">        noteText.setX(10);</span>
+<span class="nc" id="L302">        noteText.setY(230);</span>
+<span class="nc" id="L303">        noteText.setWidth(495);</span>
+<span class="nc" id="L304">        noteText.setHeight(20);</span>
+<span class="nc" id="L305">        noteText.setText(&quot;El siguiente detalle muestra el movimiento consolidado de todas sus cuentas durante el período consultado.&quot;);</span>
+<span class="nc" id="L306">        noteText.setFontSize(7f);</span>
+<span class="nc" id="L307">        noteText.setItalic(true);</span>
+<span class="nc" id="L308">        noteText.setHorizontalTextAlign(HorizontalTextAlignEnum.LEFT);</span>
+<span class="nc" id="L309">        noteText.setForecolor(new Color(100, 100, 100));</span>
+<span class="nc" id="L310">        titleBand.addElement(noteText);</span>
+        
+<span class="nc" id="L312">        jasperDesign.setTitle(titleBand);</span>
+<span class="nc" id="L313">    }</span>
+    
+    private void addSummaryField(JRDesignBand band, String label, String expression, int x, int y, int width, Color color) {
+        // Etiqueta
+<span class="nc" id="L317">        JRDesignStaticText labelText = new JRDesignStaticText();</span>
+<span class="nc" id="L318">        labelText.setX(x);</span>
+<span class="nc" id="L319">        labelText.setY(y);</span>
+<span class="nc" id="L320">        labelText.setWidth(width);</span>
+<span class="nc" id="L321">        labelText.setHeight(10);</span>
+<span class="nc" id="L322">        labelText.setText(label);</span>
+<span class="nc" id="L323">        labelText.setFontSize(8f);</span>
+<span class="nc" id="L324">        labelText.setBold(true);</span>
+<span class="nc" id="L325">        band.addElement(labelText);</span>
+        
+        // Valor
+<span class="nc" id="L328">        JRDesignTextField valueField = new JRDesignTextField();</span>
+<span class="nc" id="L329">        valueField.setX(x);</span>
+<span class="nc" id="L330">        valueField.setY(y + 10);</span>
+<span class="nc" id="L331">        valueField.setWidth(width);</span>
+<span class="nc" id="L332">        valueField.setHeight(12);</span>
+<span class="nc" id="L333">        valueField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format(&quot; + expression + &quot;)&quot;));</span>
+<span class="nc" id="L334">        valueField.setFontSize(10f);</span>
+<span class="nc" id="L335">        valueField.setBold(true);</span>
+<span class="nc" id="L336">        valueField.setForecolor(color);</span>
+<span class="nc" id="L337">        band.addElement(valueField);</span>
+<span class="nc" id="L338">    }</span>
+    
+    private void addColumnHeaderBand(JasperDesign jasperDesign) {
+<span class="nc" id="L341">        JRDesignBand columnHeaderBand = new JRDesignBand();</span>
+<span class="nc" id="L342">        columnHeaderBand.setHeight(30);</span>
+        
+        // Fondo azul para el encabezado
+<span class="nc" id="L345">        JRDesignRectangle headerBackground = new JRDesignRectangle();</span>
+<span class="nc" id="L346">        headerBackground.setX(0);</span>
+<span class="nc" id="L347">        headerBackground.setY(0);</span>
+<span class="nc" id="L348">        headerBackground.setWidth(515);</span>
+<span class="nc" id="L349">        headerBackground.setHeight(30);</span>
+<span class="nc" id="L350">        headerBackground.setBackcolor(new Color(0, 51, 102)); // Azul corporativo</span>
+<span class="nc" id="L351">        headerBackground.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L352">        columnHeaderBand.addElement(headerBackground);</span>
+        
+        // ACTUALIZADO: Agregada columna &quot;Tipo Movimiento&quot;
+<span class="nc" id="L355">        String[] headers = {&quot;Fecha&quot;, &quot;Cliente&quot;, &quot;Nro.Cuenta&quot;, &quot;Tipo&quot;, &quot;Saldo Inicial&quot;, &quot;Estado&quot;, &quot;Tipo Movimiento&quot;, &quot;Movimiento&quot;, &quot;Saldo Disponible&quot;};</span>
+<span class="nc" id="L356">        int[] widths = {50, 70, 60, 55, 60, 35, 70, 55, 60};</span>
+<span class="nc" id="L357">        int xPosition = 0;</span>
+        
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        for (int i = 0; i &lt; headers.length; i++) {</span>
+<span class="nc" id="L360">            JRDesignStaticText headerText = new JRDesignStaticText();</span>
+<span class="nc" id="L361">            headerText.setX(xPosition);</span>
+<span class="nc" id="L362">            headerText.setY(5);</span>
+<span class="nc" id="L363">            headerText.setWidth(widths[i]);</span>
+<span class="nc" id="L364">            headerText.setHeight(20);</span>
+<span class="nc" id="L365">            headerText.setText(headers[i]);</span>
+<span class="nc" id="L366">            headerText.setFontSize(7f); // Reducido para que quepa todo</span>
+<span class="nc" id="L367">            headerText.setBold(true);</span>
+<span class="nc" id="L368">            headerText.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L369">            headerText.setForecolor(Color.WHITE); // Texto blanco</span>
+<span class="nc" id="L370">            columnHeaderBand.addElement(headerText);</span>
+<span class="nc" id="L371">            xPosition += widths[i];</span>
+        }
+        
+<span class="nc" id="L374">        jasperDesign.setColumnHeader(columnHeaderBand);</span>
+<span class="nc" id="L375">    }</span>
+    
+    private void addDetailBand(JasperDesign jasperDesign) {
+<span class="nc" id="L378">        JRDesignBand detailBand = new JRDesignBand();</span>
+<span class="nc" id="L379">        detailBand.setHeight(80); // Altura aumentada para encabezados con resumen completo</span>
+        
+<span class="nc" id="L381">        int[] widths = {50, 70, 60, 55, 60, 35, 70, 55, 60};</span>
+        
+        // ============ SECCIÓN 1: ENCABEZADO DE CUENTA ============
+        // Solo se muestra cuando isAccountHeader = true
+        
+        // Línea separadora superior
+<span class="nc" id="L387">        JRDesignLine accountSeparator = new JRDesignLine();</span>
+<span class="nc" id="L388">        accountSeparator.setX(0);</span>
+<span class="nc" id="L389">        accountSeparator.setY(0);</span>
+<span class="nc" id="L390">        accountSeparator.setWidth(515);</span>
+<span class="nc" id="L391">        accountSeparator.setHeight(0);</span>
+<span class="nc" id="L392">        accountSeparator.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L393">        accountSeparator.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L394">        detailBand.addElement(accountSeparator);</span>
+        
+        // Fondo del encabezado de cuenta (solo cuando es encabezado)
+<span class="nc" id="L397">        JRDesignRectangle accountHeaderBox = new JRDesignRectangle();</span>
+<span class="nc" id="L398">        accountHeaderBox.setX(0);</span>
+<span class="nc" id="L399">        accountHeaderBox.setY(0);</span>
+<span class="nc" id="L400">        accountHeaderBox.setWidth(515);</span>
+<span class="nc" id="L401">        accountHeaderBox.setHeight(80);</span>
+<span class="nc" id="L402">        accountHeaderBox.setBackcolor(new Color(240, 248, 255));</span>
+<span class="nc" id="L403">        accountHeaderBox.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L404">        accountHeaderBox.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L405">        detailBand.addElement(accountHeaderBox);</span>
+        
+        // Título: &quot;CUENTA AHORROS - 478758&quot; (en MAYÚSCULAS)
+<span class="nc" id="L408">        JRDesignTextField accountTitle = new JRDesignTextField();</span>
+<span class="nc" id="L409">        accountTitle.setX(10);</span>
+<span class="nc" id="L410">        accountTitle.setY(5);</span>
+<span class="nc" id="L411">        accountTitle.setWidth(495);</span>
+<span class="nc" id="L412">        accountTitle.setHeight(12);</span>
+<span class="nc" id="L413">        accountTitle.setExpression(createExpression(&quot;\&quot;CUENTA \&quot; + ($F{accountType} != null ? $F{accountType}.toUpperCase() : \&quot;\&quot;) + \&quot; - \&quot; + ($F{accountNumber} != null ? $F{accountNumber} : \&quot;\&quot;)&quot;));</span>
+<span class="nc" id="L414">        accountTitle.setFontSize(10f);</span>
+<span class="nc" id="L415">        accountTitle.setBold(true);</span>
+<span class="nc" id="L416">        accountTitle.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L417">        accountTitle.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L418">        accountTitle.setBlankWhenNull(false);</span>
+<span class="nc" id="L419">        accountTitle.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L420">        detailBand.addElement(accountTitle);</span>
+        
+        // Cliente de la cuenta (Titular) - Más prominente
+<span class="nc" id="L423">        JRDesignTextField accountClient = new JRDesignTextField();</span>
+<span class="nc" id="L424">        accountClient.setX(10);</span>
+<span class="nc" id="L425">        accountClient.setY(19);</span>
+<span class="nc" id="L426">        accountClient.setWidth(495);</span>
+<span class="nc" id="L427">        accountClient.setHeight(12);</span>
+<span class="nc" id="L428">        accountClient.setExpression(createExpression(&quot;\&quot;Cliente: \&quot; + ($F{client} != null ? $F{client} : \&quot;\&quot;)&quot;));</span>
+<span class="nc" id="L429">        accountClient.setFontSize(9f);</span>
+<span class="nc" id="L430">        accountClient.setBold(true);</span>
+<span class="nc" id="L431">        accountClient.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L432">        accountClient.setForecolor(new Color(51, 51, 51));</span>
+<span class="nc" id="L433">        accountClient.setBlankWhenNull(false);</span>
+<span class="nc" id="L434">        accountClient.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L435">        detailBand.addElement(accountClient);</span>
+        
+        // Línea separadora entre cliente y resumen
+<span class="nc" id="L438">        JRDesignLine summaryTopLine = new JRDesignLine();</span>
+<span class="nc" id="L439">        summaryTopLine.setX(10);</span>
+<span class="nc" id="L440">        summaryTopLine.setY(34);</span>
+<span class="nc" id="L441">        summaryTopLine.setWidth(495);</span>
+<span class="nc" id="L442">        summaryTopLine.setHeight(0);</span>
+<span class="nc" id="L443">        summaryTopLine.setForecolor(new Color(200, 200, 200));</span>
+<span class="nc" id="L444">        summaryTopLine.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L445">        detailBand.addElement(summaryTopLine);</span>
+        
+        // Resumen de la cuenta (4 campos en línea) - DEBAJO DEL NOMBRE DEL CLIENTE
+        // Primera línea: Etiquetas
+<span class="nc" id="L449">        int labelY = 37;</span>
+<span class="nc" id="L450">        int valueY = 48;</span>
+        
+        // Etiqueta: Saldo Inicial
+<span class="nc" id="L453">        JRDesignStaticText labelInitial = new JRDesignStaticText();</span>
+<span class="nc" id="L454">        labelInitial.setX(10);</span>
+<span class="nc" id="L455">        labelInitial.setY(labelY);</span>
+<span class="nc" id="L456">        labelInitial.setWidth(120);</span>
+<span class="nc" id="L457">        labelInitial.setHeight(10);</span>
+<span class="nc" id="L458">        labelInitial.setText(&quot;Saldo Inicial:&quot;);</span>
+<span class="nc" id="L459">        labelInitial.setFontSize(8f);</span>
+<span class="nc" id="L460">        labelInitial.setBold(true);</span>
+<span class="nc" id="L461">        labelInitial.setForecolor(new Color(0, 0, 0));</span>
+<span class="nc" id="L462">        labelInitial.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L463">        detailBand.addElement(labelInitial);</span>
+        
+        // Valor: Saldo Inicial
+<span class="nc" id="L466">        JRDesignTextField accInitialBalance = new JRDesignTextField();</span>
+<span class="nc" id="L467">        accInitialBalance.setX(10);</span>
+<span class="nc" id="L468">        accInitialBalance.setY(valueY);</span>
+<span class="nc" id="L469">        accInitialBalance.setWidth(120);</span>
+<span class="nc" id="L470">        accInitialBalance.setHeight(14);</span>
+<span class="nc" id="L471">        accInitialBalance.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{accountInitialBalance} != null ? $F{accountInitialBalance} : 0.0)&quot;));</span>
+<span class="nc" id="L472">        accInitialBalance.setFontSize(10f);</span>
+<span class="nc" id="L473">        accInitialBalance.setBold(true);</span>
+<span class="nc" id="L474">        accInitialBalance.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L475">        accInitialBalance.setBlankWhenNull(false);</span>
+<span class="nc" id="L476">        accInitialBalance.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L477">        detailBand.addElement(accInitialBalance);</span>
+        
+        // Etiqueta: Total Depósitos
+<span class="nc" id="L480">        JRDesignStaticText labelDeposits = new JRDesignStaticText();</span>
+<span class="nc" id="L481">        labelDeposits.setX(135);</span>
+<span class="nc" id="L482">        labelDeposits.setY(labelY);</span>
+<span class="nc" id="L483">        labelDeposits.setWidth(115);</span>
+<span class="nc" id="L484">        labelDeposits.setHeight(10);</span>
+<span class="nc" id="L485">        labelDeposits.setText(&quot;Total Depósitos:&quot;);</span>
+<span class="nc" id="L486">        labelDeposits.setFontSize(8f);</span>
+<span class="nc" id="L487">        labelDeposits.setBold(true);</span>
+<span class="nc" id="L488">        labelDeposits.setForecolor(new Color(0, 0, 0));</span>
+<span class="nc" id="L489">        labelDeposits.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L490">        detailBand.addElement(labelDeposits);</span>
+        
+        // Valor: Total Depósitos
+<span class="nc" id="L493">        JRDesignTextField accDeposits = new JRDesignTextField();</span>
+<span class="nc" id="L494">        accDeposits.setX(135);</span>
+<span class="nc" id="L495">        accDeposits.setY(valueY);</span>
+<span class="nc" id="L496">        accDeposits.setWidth(115);</span>
+<span class="nc" id="L497">        accDeposits.setHeight(14);</span>
+<span class="nc" id="L498">        accDeposits.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{accountDeposits} != null ? $F{accountDeposits} : 0.0)&quot;));</span>
+<span class="nc" id="L499">        accDeposits.setFontSize(10f);</span>
+<span class="nc" id="L500">        accDeposits.setBold(true);</span>
+<span class="nc" id="L501">        accDeposits.setForecolor(new Color(0, 128, 0));</span>
+<span class="nc" id="L502">        accDeposits.setBlankWhenNull(false);</span>
+<span class="nc" id="L503">        accDeposits.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L504">        detailBand.addElement(accDeposits);</span>
+        
+        // Etiqueta: Total Retiros
+<span class="nc" id="L507">        JRDesignStaticText labelWithdrawals = new JRDesignStaticText();</span>
+<span class="nc" id="L508">        labelWithdrawals.setX(255);</span>
+<span class="nc" id="L509">        labelWithdrawals.setY(labelY);</span>
+<span class="nc" id="L510">        labelWithdrawals.setWidth(115);</span>
+<span class="nc" id="L511">        labelWithdrawals.setHeight(10);</span>
+<span class="nc" id="L512">        labelWithdrawals.setText(&quot;Total Retiros:&quot;);</span>
+<span class="nc" id="L513">        labelWithdrawals.setFontSize(8f);</span>
+<span class="nc" id="L514">        labelWithdrawals.setBold(true);</span>
+<span class="nc" id="L515">        labelWithdrawals.setForecolor(new Color(0, 0, 0));</span>
+<span class="nc" id="L516">        labelWithdrawals.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L517">        detailBand.addElement(labelWithdrawals);</span>
+        
+        // Valor: Total Retiros
+<span class="nc" id="L520">        JRDesignTextField accWithdrawals = new JRDesignTextField();</span>
+<span class="nc" id="L521">        accWithdrawals.setX(255);</span>
+<span class="nc" id="L522">        accWithdrawals.setY(valueY);</span>
+<span class="nc" id="L523">        accWithdrawals.setWidth(115);</span>
+<span class="nc" id="L524">        accWithdrawals.setHeight(14);</span>
+<span class="nc" id="L525">        accWithdrawals.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{accountWithdrawals} != null ? $F{accountWithdrawals} : 0.0)&quot;));</span>
+<span class="nc" id="L526">        accWithdrawals.setFontSize(10f);</span>
+<span class="nc" id="L527">        accWithdrawals.setBold(true);</span>
+<span class="nc" id="L528">        accWithdrawals.setForecolor(new Color(200, 0, 0));</span>
+<span class="nc" id="L529">        accWithdrawals.setBlankWhenNull(false);</span>
+<span class="nc" id="L530">        accWithdrawals.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L531">        detailBand.addElement(accWithdrawals);</span>
+        
+        // Etiqueta: Saldo Final
+<span class="nc" id="L534">        JRDesignStaticText labelFinal = new JRDesignStaticText();</span>
+<span class="nc" id="L535">        labelFinal.setX(375);</span>
+<span class="nc" id="L536">        labelFinal.setY(labelY);</span>
+<span class="nc" id="L537">        labelFinal.setWidth(130);</span>
+<span class="nc" id="L538">        labelFinal.setHeight(10);</span>
+<span class="nc" id="L539">        labelFinal.setText(&quot;Saldo Final:&quot;);</span>
+<span class="nc" id="L540">        labelFinal.setFontSize(8f);</span>
+<span class="nc" id="L541">        labelFinal.setBold(true);</span>
+<span class="nc" id="L542">        labelFinal.setForecolor(new Color(0, 0, 0));</span>
+<span class="nc" id="L543">        labelFinal.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L544">        detailBand.addElement(labelFinal);</span>
+        
+        // Valor: Saldo Final
+<span class="nc" id="L547">        JRDesignTextField accFinalBalance = new JRDesignTextField();</span>
+<span class="nc" id="L548">        accFinalBalance.setX(375);</span>
+<span class="nc" id="L549">        accFinalBalance.setY(valueY);</span>
+<span class="nc" id="L550">        accFinalBalance.setWidth(130);</span>
+<span class="nc" id="L551">        accFinalBalance.setHeight(14);</span>
+<span class="nc" id="L552">        accFinalBalance.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{accountFinalBalance} != null ? $F{accountFinalBalance} : 0.0)&quot;));</span>
+<span class="nc" id="L553">        accFinalBalance.setFontSize(10f);</span>
+<span class="nc" id="L554">        accFinalBalance.setBold(true);</span>
+<span class="nc" id="L555">        accFinalBalance.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L556">        accFinalBalance.setBlankWhenNull(false);</span>
+<span class="nc" id="L557">        accFinalBalance.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L558">        detailBand.addElement(accFinalBalance);</span>
+        
+        // Línea separadora inferior del encabezado
+<span class="nc" id="L561">        JRDesignLine accountSeparator2 = new JRDesignLine();</span>
+<span class="nc" id="L562">        accountSeparator2.setX(0);</span>
+<span class="nc" id="L563">        accountSeparator2.setY(79);</span>
+<span class="nc" id="L564">        accountSeparator2.setWidth(515);</span>
+<span class="nc" id="L565">        accountSeparator2.setHeight(0);</span>
+<span class="nc" id="L566">        accountSeparator2.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L567">        accountSeparator2.setPrintWhenExpression(createExpression(&quot;Boolean.TRUE.equals($F{isAccountHeader})&quot;));</span>
+<span class="nc" id="L568">        detailBand.addElement(accountSeparator2);</span>
+        
+        // ============ SECCIÓN 2: FILA DE TRANSACCIÓN ============
+        // Solo se muestra cuando isAccountHeader = false
+        // IMPORTANTE: Y=0 para que no haya espacios entre transacciones
+        
+        // Fondo alternado para transacciones
+<span class="nc" id="L575">        JRDesignRectangle rowBackground = new JRDesignRectangle();</span>
+<span class="nc" id="L576">        rowBackground.setX(0);</span>
+<span class="nc" id="L577">        rowBackground.setY(0);</span>
+<span class="nc" id="L578">        rowBackground.setWidth(515);</span>
+<span class="nc" id="L579">        rowBackground.setHeight(17);</span>
+<span class="nc" id="L580">        rowBackground.setBackcolor(new Color(250, 250, 250));</span>
+<span class="nc" id="L581">        rowBackground.setForecolor(new Color(200, 200, 200));</span>
+<span class="nc" id="L582">        rowBackground.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L583">        detailBand.addElement(rowBackground);</span>
+        
+        // Línea inferior de cada fila de transacción
+<span class="nc" id="L586">        JRDesignLine rowLine = new JRDesignLine();</span>
+<span class="nc" id="L587">        rowLine.setX(0);</span>
+<span class="nc" id="L588">        rowLine.setY(16);</span>
+<span class="nc" id="L589">        rowLine.setWidth(515);</span>
+<span class="nc" id="L590">        rowLine.setHeight(0);</span>
+<span class="nc" id="L591">        rowLine.setForecolor(new Color(220, 220, 220));</span>
+<span class="nc" id="L592">        rowLine.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L593">        detailBand.addElement(rowLine);</span>
+        
+<span class="nc" id="L595">        int xPosition = 0;</span>
+<span class="nc" id="L596">        int transactionY = 2; // Posición Y=2 para centrar texto en fila de 17px</span>
+        
+        // Fecha
+<span class="nc" id="L599">        JRDesignTextField dateField = new JRDesignTextField();</span>
+<span class="nc" id="L600">        dateField.setX(xPosition);</span>
+<span class="nc" id="L601">        dateField.setY(transactionY);</span>
+<span class="nc" id="L602">        dateField.setWidth(widths[0]);</span>
+<span class="nc" id="L603">        dateField.setHeight(13);</span>
+<span class="nc" id="L604">        dateField.setExpression(createExpression(&quot;$F{date}&quot;));</span>
+<span class="nc" id="L605">        dateField.setFontSize(7f);</span>
+<span class="nc" id="L606">        dateField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L607">        dateField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L608">        detailBand.addElement(dateField);</span>
+<span class="nc" id="L609">        xPosition += widths[0];</span>
+        
+        // Cliente
+<span class="nc" id="L612">        JRDesignTextField clientField = new JRDesignTextField();</span>
+<span class="nc" id="L613">        clientField.setX(xPosition);</span>
+<span class="nc" id="L614">        clientField.setY(transactionY);</span>
+<span class="nc" id="L615">        clientField.setWidth(widths[1]);</span>
+<span class="nc" id="L616">        clientField.setHeight(13);</span>
+<span class="nc" id="L617">        clientField.setExpression(createExpression(&quot;$F{client}&quot;));</span>
+<span class="nc" id="L618">        clientField.setFontSize(7f);</span>
+<span class="nc" id="L619">        clientField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L620">        clientField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L621">        detailBand.addElement(clientField);</span>
+<span class="nc" id="L622">        xPosition += widths[1];</span>
+        
+        // Número de cuenta
+<span class="nc" id="L625">        JRDesignTextField accountNumberField = new JRDesignTextField();</span>
+<span class="nc" id="L626">        accountNumberField.setX(xPosition);</span>
+<span class="nc" id="L627">        accountNumberField.setY(transactionY);</span>
+<span class="nc" id="L628">        accountNumberField.setWidth(widths[2]);</span>
+<span class="nc" id="L629">        accountNumberField.setHeight(13);</span>
+<span class="nc" id="L630">        accountNumberField.setExpression(createExpression(&quot;$F{accountNumber}&quot;));</span>
+<span class="nc" id="L631">        accountNumberField.setFontSize(7f);</span>
+<span class="nc" id="L632">        accountNumberField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L633">        accountNumberField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L634">        detailBand.addElement(accountNumberField);</span>
+<span class="nc" id="L635">        xPosition += widths[2];</span>
+        
+        // Tipo de cuenta
+<span class="nc" id="L638">        JRDesignTextField typeField = new JRDesignTextField();</span>
+<span class="nc" id="L639">        typeField.setX(xPosition);</span>
+<span class="nc" id="L640">        typeField.setY(transactionY);</span>
+<span class="nc" id="L641">        typeField.setWidth(widths[3]);</span>
+<span class="nc" id="L642">        typeField.setHeight(13);</span>
+<span class="nc" id="L643">        typeField.setExpression(createExpression(&quot;$F{type}&quot;));</span>
+<span class="nc" id="L644">        typeField.setFontSize(7f);</span>
+<span class="nc" id="L645">        typeField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L646">        typeField.setBold(true);</span>
+<span class="nc" id="L647">        typeField.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L648">        typeField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L649">        detailBand.addElement(typeField);</span>
+<span class="nc" id="L650">        xPosition += widths[3];</span>
+        
+        // Saldo Inicial
+<span class="nc" id="L653">        JRDesignTextField initialBalanceField = new JRDesignTextField();</span>
+<span class="nc" id="L654">        initialBalanceField.setX(xPosition);</span>
+<span class="nc" id="L655">        initialBalanceField.setY(transactionY);</span>
+<span class="nc" id="L656">        initialBalanceField.setWidth(widths[4]);</span>
+<span class="nc" id="L657">        initialBalanceField.setHeight(13);</span>
+<span class="nc" id="L658">        initialBalanceField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{initialBalance})&quot;));</span>
+<span class="nc" id="L659">        initialBalanceField.setFontSize(7f);</span>
+<span class="nc" id="L660">        initialBalanceField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L661">        initialBalanceField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L662">        detailBand.addElement(initialBalanceField);</span>
+<span class="nc" id="L663">        xPosition += widths[4];</span>
+        
+        // Estado
+<span class="nc" id="L666">        JRDesignTextField statusField = new JRDesignTextField();</span>
+<span class="nc" id="L667">        statusField.setX(xPosition);</span>
+<span class="nc" id="L668">        statusField.setY(transactionY);</span>
+<span class="nc" id="L669">        statusField.setWidth(widths[5]);</span>
+<span class="nc" id="L670">        statusField.setHeight(13);</span>
+<span class="nc" id="L671">        statusField.setExpression(createExpression(&quot;$F{status}&quot;));</span>
+<span class="nc" id="L672">        statusField.setFontSize(7f);</span>
+<span class="nc" id="L673">        statusField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L674">        statusField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L675">        detailBand.addElement(statusField);</span>
+<span class="nc" id="L676">        xPosition += widths[5];</span>
+        
+        // Tipo de Movimiento (NUEVA COLUMNA CON EMOJIS)
+<span class="nc" id="L679">        JRDesignTextField movementTypeField = new JRDesignTextField();</span>
+<span class="nc" id="L680">        movementTypeField.setX(xPosition);</span>
+<span class="nc" id="L681">        movementTypeField.setY(transactionY);</span>
+<span class="nc" id="L682">        movementTypeField.setWidth(widths[6]);</span>
+<span class="nc" id="L683">        movementTypeField.setHeight(13);</span>
+<span class="nc" id="L684">        movementTypeField.setExpression(createExpression(&quot;$F{movementType}&quot;));</span>
+<span class="nc" id="L685">        movementTypeField.setFontSize(7f);</span>
+<span class="nc" id="L686">        movementTypeField.setBold(true);</span>
+<span class="nc" id="L687">        movementTypeField.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L688">        movementTypeField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L689">        detailBand.addElement(movementTypeField);</span>
+<span class="nc" id="L690">        xPosition += widths[6];</span>
+        
+        // Movimiento
+<span class="nc" id="L693">        JRDesignTextField movementField = new JRDesignTextField();</span>
+<span class="nc" id="L694">        movementField.setX(xPosition);</span>
+<span class="nc" id="L695">        movementField.setY(transactionY);</span>
+<span class="nc" id="L696">        movementField.setWidth(widths[7]);</span>
+<span class="nc" id="L697">        movementField.setHeight(13);</span>
+<span class="nc" id="L698">        movementField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{movement})&quot;));</span>
+<span class="nc" id="L699">        movementField.setFontSize(7f);</span>
+<span class="nc" id="L700">        movementField.setBold(true);</span>
+<span class="nc" id="L701">        movementField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L702">        movementField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L703">        detailBand.addElement(movementField);</span>
+<span class="nc" id="L704">        xPosition += widths[7];</span>
+        
+        // Saldo Disponible
+<span class="nc" id="L707">        JRDesignTextField availableBalanceField = new JRDesignTextField();</span>
+<span class="nc" id="L708">        availableBalanceField.setX(xPosition);</span>
+<span class="nc" id="L709">        availableBalanceField.setY(transactionY);</span>
+<span class="nc" id="L710">        availableBalanceField.setWidth(widths[8]);</span>
+<span class="nc" id="L711">        availableBalanceField.setHeight(13);</span>
+<span class="nc" id="L712">        availableBalanceField.setExpression(createExpression(&quot;\&quot;$\&quot; + new java.text.DecimalFormat(\&quot;#,##0.00\&quot;).format($F{availableBalance})&quot;));</span>
+<span class="nc" id="L713">        availableBalanceField.setFontSize(7f);</span>
+<span class="nc" id="L714">        availableBalanceField.setBold(true);</span>
+<span class="nc" id="L715">        availableBalanceField.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L716">        availableBalanceField.setForecolor(new Color(0, 100, 0));</span>
+<span class="nc" id="L717">        availableBalanceField.setPrintWhenExpression(createExpression(&quot;new Boolean(!$F{isAccountHeader}.booleanValue())&quot;));</span>
+<span class="nc" id="L718">        detailBand.addElement(availableBalanceField);</span>
+        
+<span class="nc" id="L720">        ((JRDesignSection) jasperDesign.getDetailSection()).addBand(detailBand);</span>
+<span class="nc" id="L721">    }</span>
+    
+    private void addPageFooter(JasperDesign jasperDesign) {
+<span class="nc" id="L724">        JRDesignBand pageFooter = new JRDesignBand();</span>
+<span class="nc" id="L725">        pageFooter.setHeight(50);</span>
+        
+        // Línea superior
+<span class="nc" id="L728">        JRDesignLine topLine = new JRDesignLine();</span>
+<span class="nc" id="L729">        topLine.setX(0);</span>
+<span class="nc" id="L730">        topLine.setY(5);</span>
+<span class="nc" id="L731">        topLine.setWidth(515);</span>
+<span class="nc" id="L732">        topLine.setHeight(0);</span>
+<span class="nc" id="L733">        topLine.setForecolor(new Color(0, 51, 102));</span>
+<span class="nc" id="L734">        pageFooter.addElement(topLine);</span>
+        
+        // Información del banco
+<span class="nc" id="L737">        JRDesignStaticText footerInfo = new JRDesignStaticText();</span>
+<span class="nc" id="L738">        footerInfo.setX(0);</span>
+<span class="nc" id="L739">        footerInfo.setY(10);</span>
+<span class="nc" id="L740">        footerInfo.setWidth(350);</span>
+<span class="nc" id="L741">        footerInfo.setHeight(15);</span>
+<span class="nc" id="L742">        footerInfo.setText(&quot;NEXUS - Servicios Financieros | www.nexusbank.com | 1-800-NEXUS&quot;);</span>
+<span class="nc" id="L743">        footerInfo.setFontSize(7f);</span>
+<span class="nc" id="L744">        footerInfo.setForecolor(new Color(100, 100, 100));</span>
+<span class="nc" id="L745">        pageFooter.addElement(footerInfo);</span>
+        
+        // Número de página
+<span class="nc" id="L748">        JRDesignTextField pageNumber = new JRDesignTextField();</span>
+<span class="nc" id="L749">        pageNumber.setX(350);</span>
+<span class="nc" id="L750">        pageNumber.setY(10);</span>
+<span class="nc" id="L751">        pageNumber.setWidth(165);</span>
+<span class="nc" id="L752">        pageNumber.setHeight(15);</span>
+<span class="nc" id="L753">        pageNumber.setExpression(createExpression(&quot;\&quot;Página \&quot; + $V{PAGE_NUMBER}&quot;));</span>
+<span class="nc" id="L754">        pageNumber.setFontSize(8f);</span>
+<span class="nc" id="L755">        pageNumber.setHorizontalTextAlign(HorizontalTextAlignEnum.RIGHT);</span>
+<span class="nc" id="L756">        pageFooter.addElement(pageNumber);</span>
+        
+        // Advertencia legal
+<span class="nc" id="L759">        JRDesignStaticText legalNote = new JRDesignStaticText();</span>
+<span class="nc" id="L760">        legalNote.setX(0);</span>
+<span class="nc" id="L761">        legalNote.setY(25);</span>
+<span class="nc" id="L762">        legalNote.setWidth(515);</span>
+<span class="nc" id="L763">        legalNote.setHeight(20);</span>
+<span class="nc" id="L764">        legalNote.setText(&quot;Este documento es confidencial. Para consultas, contacte con su asesor bancario.&quot;);</span>
+<span class="nc" id="L765">        legalNote.setFontSize(7f);</span>
+<span class="nc" id="L766">        legalNote.setItalic(true);</span>
+<span class="nc" id="L767">        legalNote.setHorizontalTextAlign(HorizontalTextAlignEnum.CENTER);</span>
+<span class="nc" id="L768">        legalNote.setForecolor(new Color(150, 150, 150));</span>
+<span class="nc" id="L769">        pageFooter.addElement(legalNote);</span>
+        
+<span class="nc" id="L771">        jasperDesign.setPageFooter(pageFooter);</span>
+<span class="nc" id="L772">    }</span>
+    
+    private JRDesignExpression createExpression(String text) {
+<span class="nc" id="L775">        JRDesignExpression expression = new JRDesignExpression();</span>
+<span class="nc" id="L776">        expression.setText(text);</span>
+<span class="nc" id="L777">        return expression;</span>
+    }
+    
+    private List&lt;Map&lt;String, Object&gt;&gt; convertGroupedDataToMap(Map&lt;String, List&lt;ReportDTO&gt;&gt; groupedByAccount) {
+<span class="nc" id="L781">        DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy&quot;);</span>
+<span class="nc" id="L782">        List&lt;Map&lt;String, Object&gt;&gt; dataList = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L784" title="All 2 branches missed.">        for (Map.Entry&lt;String, List&lt;ReportDTO&gt;&gt; entry : groupedByAccount.entrySet()) {</span>
+<span class="nc" id="L785">            List&lt;ReportDTO&gt; accountReports = entry.getValue();</span>
+            
+<span class="nc bnc" id="L787" title="All 2 branches missed.">            if (accountReports.isEmpty()) continue;</span>
+            
+            // Agregar encabezado de cuenta (primera fila)
+<span class="nc" id="L790">            ReportDTO firstReport = accountReports.get(0);</span>
+<span class="nc" id="L791">            Map&lt;String, Object&gt; headerMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L792">            headerMap.put(&quot;isAccountHeader&quot;, true);</span>
+<span class="nc" id="L793">            headerMap.put(&quot;accountNumber&quot;, firstReport.getAccountNumber());</span>
+<span class="nc" id="L794">            headerMap.put(&quot;accountType&quot;, translateAccountType(firstReport.getType()));</span>
+<span class="nc" id="L795">            headerMap.put(&quot;client&quot;, firstReport.getClient());</span>
+            
+            // Calcular totales de esta cuenta
+            // Usar Double para evitar auto-unboxing en tiempo de compilación
+<span class="nc bnc" id="L799" title="All 2 branches missed.">            Double accountInitialBalance = firstReport.getInitialBalance() != null ? firstReport.getInitialBalance() : Double.valueOf(0.0);</span>
+<span class="nc" id="L800">            double accDepositsD = accountReports.stream()</span>
+<span class="nc" id="L801">                .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L802">                    Double mv = r.getMovement();</span>
+<span class="nc bnc" id="L803" title="All 4 branches missed.">                    return (mv != null &amp;&amp; mv.doubleValue() &gt; 0.0) ? mv.doubleValue() : 0.0;</span>
+                })
+<span class="nc" id="L805">                .sum();</span>
+<span class="nc" id="L806">            Double accountDeposits = Double.valueOf(accDepositsD);</span>
+
+<span class="nc" id="L808">            double accWithdrawalsD = Math.abs(accountReports.stream()</span>
+<span class="nc" id="L809">                .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L810">                    Double mv = r.getMovement();</span>
+<span class="nc bnc" id="L811" title="All 4 branches missed.">                    return (mv != null &amp;&amp; mv.doubleValue() &lt; 0.0) ? mv.doubleValue() : 0.0;</span>
+                })
+<span class="nc" id="L813">                .sum());</span>
+<span class="nc" id="L814">            Double accountWithdrawals = Double.valueOf(accWithdrawalsD);</span>
+
+<span class="nc" id="L816">            double accFinalD = accountReports.stream()</span>
+<span class="nc" id="L817">                .mapToDouble(r -&gt; {</span>
+<span class="nc" id="L818">                    Double av = r.getAvailableBalance();</span>
+<span class="nc bnc" id="L819" title="All 2 branches missed.">                    return av != null ? av.doubleValue() : 0.0;</span>
+                })
+<span class="nc" id="L821">                .max()</span>
+<span class="nc" id="L822">                .orElse(0.0);</span>
+<span class="nc" id="L823">            Double accountFinalBalance = Double.valueOf(accFinalD);</span>
+
+<span class="nc" id="L825">            headerMap.put(&quot;accountInitialBalance&quot;, accountInitialBalance);</span>
+<span class="nc" id="L826">            headerMap.put(&quot;accountDeposits&quot;, accountDeposits);</span>
+<span class="nc" id="L827">            headerMap.put(&quot;accountWithdrawals&quot;, accountWithdrawals);</span>
+<span class="nc" id="L828">            headerMap.put(&quot;accountFinalBalance&quot;, accountFinalBalance);</span>
+            
+            // Log de depuración
+<span class="nc" id="L831">            log.info(&quot;=== ENCABEZADO DE CUENTA ===&quot;);</span>
+<span class="nc" id="L832">            log.info(&quot;Cuenta: {} - {}&quot;, firstReport.getAccountNumber(), firstReport.getType());</span>
+<span class="nc" id="L833">            log.info(&quot;Cliente: {}&quot;, firstReport.getClient());</span>
+<span class="nc" id="L834">            log.info(&quot;Saldo Inicial: {}&quot;, accountInitialBalance);</span>
+<span class="nc" id="L835">            log.info(&quot;Total Depósitos: {}&quot;, accountDeposits);</span>
+<span class="nc" id="L836">            log.info(&quot;Total Retiros: {}&quot;, accountWithdrawals);</span>
+<span class="nc" id="L837">            log.info(&quot;Saldo Final: {}&quot;, accountFinalBalance);</span>
+            
+            // Agregar campos vacíos para los campos de transacción (requeridos por JasperReports)
+<span class="nc" id="L840">            headerMap.put(&quot;date&quot;, &quot;&quot;);</span>
+<span class="nc" id="L841">            headerMap.put(&quot;type&quot;, &quot;&quot;);</span>
+<span class="nc" id="L842">            headerMap.put(&quot;initialBalance&quot;, 0.0);</span>
+<span class="nc" id="L843">            headerMap.put(&quot;status&quot;, &quot;&quot;);</span>
+<span class="nc" id="L844">            headerMap.put(&quot;movementType&quot;, &quot;&quot;);</span>
+<span class="nc" id="L845">            headerMap.put(&quot;movement&quot;, 0.0);</span>
+<span class="nc" id="L846">            headerMap.put(&quot;availableBalance&quot;, 0.0);</span>
+            
+<span class="nc" id="L848">            dataList.add(headerMap);</span>
+            
+            // Agregar movimientos de la cuenta
+<span class="nc bnc" id="L851" title="All 2 branches missed.">            for (ReportDTO report : accountReports) {</span>
+<span class="nc" id="L852">                Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L853">                map.put(&quot;isAccountHeader&quot;, false);</span>
+                
+                // Campos de encabezado de cuenta (vacíos para transacciones)
+<span class="nc" id="L856">                map.put(&quot;accountInitialBalance&quot;, 0.0);</span>
+<span class="nc" id="L857">                map.put(&quot;accountDeposits&quot;, 0.0);</span>
+<span class="nc" id="L858">                map.put(&quot;accountWithdrawals&quot;, 0.0);</span>
+<span class="nc" id="L859">                map.put(&quot;accountFinalBalance&quot;, 0.0);</span>
+<span class="nc" id="L860">                map.put(&quot;accountType&quot;, &quot;&quot;);</span>
+                
+<span class="nc" id="L862">                java.time.LocalDate localDate = report.getDate();</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">                if (localDate != null) {</span>
+<span class="nc" id="L864">                    String fecha = localDate.format(dateOnlyFormatter);</span>
+<span class="nc" id="L865">                    map.put(&quot;date&quot;, fecha);</span>
+<span class="nc" id="L866">                } else {</span>
+<span class="nc" id="L867">                    map.put(&quot;date&quot;, &quot;&quot;);</span>
+                }
+                
+<span class="nc bnc" id="L870" title="All 2 branches missed.">                map.put(&quot;client&quot;, report.getClient() != null ? report.getClient() : &quot;&quot;);</span>
+<span class="nc bnc" id="L871" title="All 2 branches missed.">                map.put(&quot;accountNumber&quot;, report.getAccountNumber() != null ? report.getAccountNumber() : &quot;&quot;);</span>
+<span class="nc" id="L872">                map.put(&quot;type&quot;, translateAccountType(report.getType()));</span>
+<span class="nc bnc" id="L873" title="All 2 branches missed.">                map.put(&quot;initialBalance&quot;, report.getInitialBalance() != null ? report.getInitialBalance() : Double.valueOf(0.0));</span>
+<span class="nc bnc" id="L874" title="All 2 branches missed.">                map.put(&quot;status&quot;, Boolean.TRUE.equals(report.getStatus()) ? &quot;Sí&quot; : &quot;No&quot;);</span>
+                
+                // Tipo de movimiento con emojis
+<span class="nc" id="L877">                String movementType = &quot;&quot;;</span>
+<span class="nc" id="L878">                Double mvLocal = report.getMovement();</span>
+<span class="nc bnc" id="L879" title="All 2 branches missed.">                if (mvLocal != null) {</span>
+<span class="nc bnc" id="L880" title="All 2 branches missed.">                    movementType = mvLocal.doubleValue() &gt;= 0.0 ? &quot;🟢 DEPÓSITO&quot; : &quot;🔴 RETIRO&quot;;</span>
+                }
+<span class="nc" id="L882">                map.put(&quot;movementType&quot;, movementType);</span>
+                
+<span class="nc bnc" id="L884" title="All 2 branches missed.">                map.put(&quot;movement&quot;, report.getMovement() != null ? report.getMovement() : Double.valueOf(0.0));</span>
+<span class="nc bnc" id="L885" title="All 2 branches missed.">                map.put(&quot;availableBalance&quot;, report.getAvailableBalance() != null ? report.getAvailableBalance() : Double.valueOf(0.0));</span>
+                
+<span class="nc" id="L887">                dataList.add(map);</span>
+<span class="nc" id="L888">            }</span>
+<span class="nc" id="L889">        }</span>
+<span class="nc" id="L890">        return dataList;</span>
+    }
+    
+    private String translateAccountType(String type) {
+<span class="nc bnc" id="L894" title="All 2 branches missed.">        if (type == null) return &quot;&quot;;</span>
+<span class="nc bnc" id="L895" title="All 3 branches missed.">        switch (type.toUpperCase()) {</span>
+            case &quot;SAVINGS&quot;:
+<span class="nc" id="L897">                return &quot;Ahorros&quot;;</span>
+            case &quot;CHECKING&quot;:
+<span class="nc" id="L899">                return &quot;Corriente&quot;;</span>
+            default:
+<span class="nc" id="L901">                return type;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

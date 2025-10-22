@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportResponseDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.model</a> &gt; <span class="el_source">ReportResponseDTO.java</span></div><h1>ReportResponseDTO.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.model;
+
+import java.net.URI;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.pichincha.spfmsaapexcoreservice.model.ReportDTO;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.springframework.lang.Nullable;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import jakarta.annotation.Generated;
+
+/**
+ * ReportResponseDTO
+ */
+
+@Generated(value = &quot;org.openapitools.codegen.languages.SpringCodegen&quot;, date = &quot;2025-10-21T22:09:14.182490100-05:00[America/Bogota]&quot;, comments = &quot;Generator version: 7.15.0&quot;)
+<span class="nc" id="L27">public class ReportResponseDTO {</span>
+
+<span class="nc" id="L29">  @Valid</span>
+  private List&lt;@Valid ReportDTO&gt; reportJson = new ArrayList&lt;&gt;();
+
+  private @Nullable String pdfBase64;
+
+  public ReportResponseDTO reportJson(List&lt;@Valid ReportDTO&gt; reportJson) {
+<span class="nc" id="L35">    this.reportJson = reportJson;</span>
+<span class="nc" id="L36">    return this;</span>
+  }
+
+  public ReportResponseDTO addReportJsonItem(ReportDTO reportJsonItem) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">    if (this.reportJson == null) {</span>
+<span class="nc" id="L41">      this.reportJson = new ArrayList&lt;&gt;();</span>
+    }
+<span class="nc" id="L43">    this.reportJson.add(reportJsonItem);</span>
+<span class="nc" id="L44">    return this;</span>
+  }
+
+  /**
+   * Report data in JSON format
+   * @return reportJson
+   */
+  @Valid 
+  @Schema(name = &quot;reportJson&quot;, description = &quot;Report data in JSON format&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;reportJson&quot;)
+  public List&lt;@Valid ReportDTO&gt; getReportJson() {
+<span class="nc" id="L55">    return reportJson;</span>
+  }
+
+  public void setReportJson(List&lt;@Valid ReportDTO&gt; reportJson) {
+<span class="nc" id="L59">    this.reportJson = reportJson;</span>
+<span class="nc" id="L60">  }</span>
+
+  public ReportResponseDTO pdfBase64(@Nullable String pdfBase64) {
+<span class="nc" id="L63">    this.pdfBase64 = pdfBase64;</span>
+<span class="nc" id="L64">    return this;</span>
+  }
+
+  /**
+   * PDF report encoded in base64 format
+   * @return pdfBase64
+   */
+  
+  @Schema(name = &quot;pdfBase64&quot;, description = &quot;PDF report encoded in base64 format&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;pdfBase64&quot;)
+  public @Nullable String getPdfBase64() {
+<span class="nc" id="L75">    return pdfBase64;</span>
+  }
+
+  public void setPdfBase64(@Nullable String pdfBase64) {
+<span class="nc" id="L79">    this.pdfBase64 = pdfBase64;</span>
+<span class="nc" id="L80">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L85">      return true;</span>
+    }
+<span class="nc bnc" id="L87" title="All 4 branches missed.">    if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L88">      return false;</span>
+    }
+<span class="nc" id="L90">    ReportResponseDTO reportResponseDTO = (ReportResponseDTO) o;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    return Objects.equals(this.reportJson, reportResponseDTO.reportJson) &amp;&amp;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        Objects.equals(this.pdfBase64, reportResponseDTO.pdfBase64);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L97">    return Objects.hash(reportJson, pdfBase64);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L102">    StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L103">    sb.append(&quot;class ReportResponseDTO {\n&quot;);</span>
+<span class="nc" id="L104">    sb.append(&quot;    reportJson: &quot;).append(toIndentedString(reportJson)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L105">    sb.append(&quot;    pdfBase64: &quot;).append(toIndentedString(pdfBase64)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L106">    sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L107">    return sb.toString();</span>
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L116">      return &quot;null&quot;;</span>
+    }
+<span class="nc" id="L118">    return o.toString().replace(&quot;\n&quot;, &quot;\n    &quot;);</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

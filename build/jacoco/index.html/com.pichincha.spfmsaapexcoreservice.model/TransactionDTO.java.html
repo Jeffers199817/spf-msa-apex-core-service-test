@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">spf-msa-apex-core-service</a> &gt; <a href="index.source.html" class="el_package">com.pichincha.spfmsaapexcoreservice.model</a> &gt; <span class="el_source">TransactionDTO.java</span></div><h1>TransactionDTO.java</h1><pre class="source lang-java linenums">package com.pichincha.spfmsaapexcoreservice.model;
+
+import java.net.URI;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.pichincha.spfmsaapexcoreservice.model.AccountDTO;
+import java.time.OffsetDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import jakarta.annotation.Generated;
+
+/**
+ * TransactionDTO
+ */
+
+@Generated(value = &quot;org.openapitools.codegen.languages.SpringCodegen&quot;, date = &quot;2025-10-21T22:09:14.182490100-05:00[America/Bogota]&quot;, comments = &quot;Generator version: 7.15.0&quot;)
+<span class="fc" id="L27">public class TransactionDTO {</span>
+
+  private @Nullable Long transactionId;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  private @Nullable OffsetDateTime date;
+
+  /**
+   * Gets or Sets transactionType
+   */
+<span class="fc" id="L37">  public enum TransactionTypeEnum {</span>
+<span class="fc" id="L38">    WITHDRAWAL(&quot;WITHDRAWAL&quot;),</span>
+    
+<span class="fc" id="L40">    DEPOSIT(&quot;DEPOSIT&quot;);</span>
+
+    private final String value;
+
+<span class="fc" id="L44">    TransactionTypeEnum(String value) {</span>
+<span class="fc" id="L45">      this.value = value;</span>
+<span class="fc" id="L46">    }</span>
+
+    @JsonValue
+    public String getValue() {
+<span class="fc" id="L50">      return value;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L55">      return String.valueOf(value);</span>
+    }
+
+    @JsonCreator
+    public static TransactionTypeEnum fromValue(String value) {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">      for (TransactionTypeEnum b : TransactionTypeEnum.values()) {</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (b.value.equals(value)) {</span>
+<span class="fc" id="L62">          return b;</span>
+        }
+      }
+<span class="nc" id="L65">      throw new IllegalArgumentException(&quot;Unexpected value '&quot; + value + &quot;'&quot;);</span>
+    }
+  }
+
+  private @Nullable TransactionTypeEnum transactionType;
+
+  private @Nullable Double amount;
+
+  private @Nullable Double balance;
+
+  private @Nullable Long accountId;
+
+  private @Nullable AccountDTO account;
+
+  public TransactionDTO transactionId(@Nullable Long transactionId) {
+<span class="nc" id="L80">    this.transactionId = transactionId;</span>
+<span class="nc" id="L81">    return this;</span>
+  }
+
+  /**
+   * Get transactionId
+   * @return transactionId
+   */
+  
+  @Schema(name = &quot;transactionId&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;transactionId&quot;)
+  public @Nullable Long getTransactionId() {
+<span class="fc" id="L92">    return transactionId;</span>
+  }
+
+  public void setTransactionId(@Nullable Long transactionId) {
+<span class="fc" id="L96">    this.transactionId = transactionId;</span>
+<span class="fc" id="L97">  }</span>
+
+  public TransactionDTO date(@Nullable OffsetDateTime date) {
+<span class="nc" id="L100">    this.date = date;</span>
+<span class="nc" id="L101">    return this;</span>
+  }
+
+  /**
+   * Get date
+   * @return date
+   */
+  @Valid 
+  @Schema(name = &quot;date&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;date&quot;)
+  public @Nullable OffsetDateTime getDate() {
+<span class="fc" id="L112">    return date;</span>
+  }
+
+  public void setDate(@Nullable OffsetDateTime date) {
+<span class="fc" id="L116">    this.date = date;</span>
+<span class="fc" id="L117">  }</span>
+
+  public TransactionDTO transactionType(@Nullable TransactionTypeEnum transactionType) {
+<span class="nc" id="L120">    this.transactionType = transactionType;</span>
+<span class="nc" id="L121">    return this;</span>
+  }
+
+  /**
+   * Get transactionType
+   * @return transactionType
+   */
+  
+  @Schema(name = &quot;transactionType&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;transactionType&quot;)
+  public @Nullable TransactionTypeEnum getTransactionType() {
+<span class="fc" id="L132">    return transactionType;</span>
+  }
+
+  public void setTransactionType(@Nullable TransactionTypeEnum transactionType) {
+<span class="fc" id="L136">    this.transactionType = transactionType;</span>
+<span class="fc" id="L137">  }</span>
+
+  public TransactionDTO amount(@Nullable Double amount) {
+<span class="nc" id="L140">    this.amount = amount;</span>
+<span class="nc" id="L141">    return this;</span>
+  }
+
+  /**
+   * Get amount
+   * @return amount
+   */
+  
+  @Schema(name = &quot;amount&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;amount&quot;)
+  public @Nullable Double getAmount() {
+<span class="fc" id="L152">    return amount;</span>
+  }
+
+  public void setAmount(@Nullable Double amount) {
+<span class="fc" id="L156">    this.amount = amount;</span>
+<span class="fc" id="L157">  }</span>
+
+  public TransactionDTO balance(@Nullable Double balance) {
+<span class="nc" id="L160">    this.balance = balance;</span>
+<span class="nc" id="L161">    return this;</span>
+  }
+
+  /**
+   * Get balance
+   * @return balance
+   */
+  
+  @Schema(name = &quot;balance&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;balance&quot;)
+  public @Nullable Double getBalance() {
+<span class="fc" id="L172">    return balance;</span>
+  }
+
+  public void setBalance(@Nullable Double balance) {
+<span class="fc" id="L176">    this.balance = balance;</span>
+<span class="fc" id="L177">  }</span>
+
+  public TransactionDTO accountId(@Nullable Long accountId) {
+<span class="nc" id="L180">    this.accountId = accountId;</span>
+<span class="nc" id="L181">    return this;</span>
+  }
+
+  /**
+   * Get accountId
+   * @return accountId
+   */
+  
+  @Schema(name = &quot;accountId&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;accountId&quot;)
+  public @Nullable Long getAccountId() {
+<span class="fc" id="L192">    return accountId;</span>
+  }
+
+  public void setAccountId(@Nullable Long accountId) {
+<span class="fc" id="L196">    this.accountId = accountId;</span>
+<span class="fc" id="L197">  }</span>
+
+  public TransactionDTO account(@Nullable AccountDTO account) {
+<span class="nc" id="L200">    this.account = account;</span>
+<span class="nc" id="L201">    return this;</span>
+  }
+
+  /**
+   * Get account
+   * @return account
+   */
+  @Valid 
+  @Schema(name = &quot;account&quot;, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty(&quot;account&quot;)
+  public @Nullable AccountDTO getAccount() {
+<span class="fc" id="L212">    return account;</span>
+  }
+
+  public void setAccount(@Nullable AccountDTO account) {
+<span class="fc" id="L216">    this.account = account;</span>
+<span class="fc" id="L217">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L222">      return true;</span>
+    }
+<span class="nc bnc" id="L224" title="All 4 branches missed.">    if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L225">      return false;</span>
+    }
+<span class="nc" id="L227">    TransactionDTO transactionDTO = (TransactionDTO) o;</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    return Objects.equals(this.transactionId, transactionDTO.transactionId) &amp;&amp;</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        Objects.equals(this.date, transactionDTO.date) &amp;&amp;</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        Objects.equals(this.transactionType, transactionDTO.transactionType) &amp;&amp;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        Objects.equals(this.amount, transactionDTO.amount) &amp;&amp;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        Objects.equals(this.balance, transactionDTO.balance) &amp;&amp;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        Objects.equals(this.accountId, transactionDTO.accountId) &amp;&amp;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        Objects.equals(this.account, transactionDTO.account);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L239">    return Objects.hash(transactionId, date, transactionType, amount, balance, accountId, account);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L244">    StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L245">    sb.append(&quot;class TransactionDTO {\n&quot;);</span>
+<span class="nc" id="L246">    sb.append(&quot;    transactionId: &quot;).append(toIndentedString(transactionId)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L247">    sb.append(&quot;    date: &quot;).append(toIndentedString(date)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L248">    sb.append(&quot;    transactionType: &quot;).append(toIndentedString(transactionType)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L249">    sb.append(&quot;    amount: &quot;).append(toIndentedString(amount)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L250">    sb.append(&quot;    balance: &quot;).append(toIndentedString(balance)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L251">    sb.append(&quot;    accountId: &quot;).append(toIndentedString(accountId)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L252">    sb.append(&quot;    account: &quot;).append(toIndentedString(account)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L253">    sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L254">    return sb.toString();</span>
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L263">      return &quot;null&quot;;</span>
+    }
+<span class="nc" id="L265">    return o.toString().replace(&quot;\n&quot;, &quot;\n    &quot;);</span>
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
